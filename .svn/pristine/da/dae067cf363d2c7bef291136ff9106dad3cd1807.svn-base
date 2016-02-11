@@ -1,0 +1,49 @@
+package org.suntao.easyorm.executor.defaults;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
+
+import org.suntao.easyorm.executor.Exceutor;
+import org.suntao.easyorm.session.SqlSession;
+
+public class DefaultExecutor implements Exceutor {
+	private Connection conn;
+
+	public DefaultExecutor() {
+	}
+
+	public DefaultExecutor(Connection conn) {
+		super();
+		this.conn = conn;
+	}
+
+	@Override
+	public <T> List<T> selectList(T type, String sqlStr) {
+		List result = null;
+		return result;
+	}
+
+	@Override
+	public <T> List<T> selectOne(T type, String sqlStr) {
+		return null;
+	}
+
+	@Override
+	public Integer update(String sqlStr) {
+		return null;
+	}
+
+	@Override
+	public Integer delete(String sqlStr) {
+		return null;
+	}
+
+	@Override
+	public Integer insert(String sqlStr) {
+		return null;
+	}
+
+}

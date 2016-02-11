@@ -1,0 +1,47 @@
+package org.suntao.easyorm.session.defaults;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+
+import org.suntao.easyorm.map.ResultMap;
+import org.suntao.easyorm.proxy.MapperProxyBuilder;
+import org.suntao.easyorm.session.SqlSession;
+import org.suntao.easyorm.xmlparse.DatabaseConfig;
+import org.suntao.easyorm.xmlparse.EasyormConfig;
+
+public class DefaultSqlSession implements SqlSession {
+	private EasyormConfig easyormConfig;
+	private MapperProxyBuilder mapperProxyBuilder;
+	private DatabaseConfig databaseConfig;
+	private Map<String,ResultMap> resultMaps;
+	
+
+	public DefaultSqlSession(EasyormConfig easyormConfig) {
+		this.easyormConfig = easyormConfig;
+		this.databaseConfig = easyormConfig.getDatabaseConfig();
+	}
+
+	@Override
+	public Connection getConnection() throws SQLException {
+		try {
+			Class.forName(databaseConfig.getDriver());
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		Connection result = DriverManager.getConnection(
+				databaseConfig.getJdbcurl(), databaseConfig.getUsername(),
+				databaseConfig.getPassword());
+		return result;
+	}
+
+	@Override
+	public <T> T getMapper(Class<T> mapperClass) {
+		T result = null;
+
+		return result;
+	}
+
+}

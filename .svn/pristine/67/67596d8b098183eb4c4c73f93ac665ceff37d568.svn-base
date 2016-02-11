@@ -1,0 +1,18 @@
+package org.suntao.easyorm.session;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+
+public interface SqlSession {
+	Connection getConnection() throws SQLException;
+
+	/**
+	 * 获取Mapper
+	 * <p>
+	 * 使用代理方法 通过接口 调用executor
+	 * 
+	 * @param mapperClass
+	 * @return
+	 */
+	<T> T getMapper(Class<T> mapperClass);
+}

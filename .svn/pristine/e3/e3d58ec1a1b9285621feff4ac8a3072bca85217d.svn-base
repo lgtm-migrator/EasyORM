@@ -1,0 +1,77 @@
+package org.suntao.easyorm.executor.defaults;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.suntao.easyorm.executor.Executor;
+import org.suntao.easyorm.map.MapStatment;
+import org.suntao.easyorm.map.ResultMapConfig;
+import org.suntao.easyorm.map.ResultMapping;
+
+/**
+ * 简化sql解释器
+ * 
+ * @author suntao
+ *
+ */
+public class SimpleExecutor implements Executor {
+	/**
+	 * 数据库连接
+	 */
+	private Connection conn;
+	/**
+	 * 结果映射器
+	 */
+	private ResultMapping mapping;
+
+	public SimpleExecutor(Connection conn, ResultMapping mapping) {
+		super();
+		this.conn = conn;
+		this.mapping = mapping;
+	}
+
+	@Override
+	public Object execute(MapStatment mapStatment, Object[] params) {
+		Object result = null;
+		ResultSet resultSet = null;
+		/**
+		 * 在此处使用preparedStatment完成查询 <br>
+		 * 获得ResultSet之后使用Mapping完成映射
+		 */
+		return result;
+	}
+
+	public <T> List<T> selectList(ResultMapConfig<T> resultMap,
+			MapStatment mapStatment) {
+		List<T> result = null;
+		Statement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = conn.createStatement();// statment之后需要使用preparedStatment替换
+			resultSet = statement.executeQuery(mapStatment.getSqlStr());
+			result = new ArrayList<T>();
+			while (resultSet.next()) {
+				result.add(mapping.getModel(resultMap, resultSet));
+			}
+			if (resultSet != null)
+				resultSet.close();
+			if (statement != null)
+				statement.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return result;
+	}
+
+	public <T> T selectOne(ResultMapConfig<T> resultMap, MapStatment mapStatment) {
+		T result = null;
+		// TO DO
+		return result;
+	}
+
+}

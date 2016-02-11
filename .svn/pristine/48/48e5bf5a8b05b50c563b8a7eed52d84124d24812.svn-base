@@ -1,0 +1,51 @@
+package org.suntao.easyorm.xmlparse;
+
+import java.util.ArrayList;
+
+/**
+ * easyorm的配置实体 用以存储xml解析的配置
+ * 
+ * @author suntao
+ * 
+ */
+public class EasyormConfig {
+	private ArrayList<MapperConfig> mappers;
+	private DatabaseConfig dbConfig;
+
+	public EasyormConfig() {
+		mappers = new ArrayList<MapperConfig>();
+	}
+
+	public ArrayList<MapperConfig> getMappers() {
+		return mappers;
+	}
+
+	public void setMappers(ArrayList<MapperConfig> mappers) {
+		this.mappers = mappers;
+	}
+
+	/**
+	 * 添加一个mapper配置
+	 * 
+	 * @param mapperConfig
+	 * @return 是否成功
+	 */
+	public boolean addMapper(MapperConfig mapperConfig) {
+		Boolean result = true;
+		try {
+			this.mappers.add(mapperConfig);
+		} catch (Exception e) {
+			result = false;
+		}
+		return result;
+	}
+
+	public DatabaseConfig getDbConfig() {
+		return dbConfig;
+	}
+
+	public void setDbConfig(DatabaseConfig dbConfig) {
+		this.dbConfig = dbConfig;
+	}
+
+}

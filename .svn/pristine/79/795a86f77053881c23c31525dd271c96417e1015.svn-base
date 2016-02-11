@@ -1,0 +1,24 @@
+# EASYORM
+* 这是一个基于Java的持久化框架
+* 架构仿照mybatis3,但简化大部分内容,只保留部分核心
+* 本项目主要目的用于教学,使读者明白反射,注解,代理,实体,接口,Class,XML解析等Java特性
+* 大量中文注释提供
+* 虽然已经足够小心,但难免出现bug,如若发现请联系我
+
+# 包介绍
+* org.suntao.easyorm.map 实体映射
+* org.suntao.easyorm.xmlparse xml文件解析
+* org.suntao.easyorm.reflect 反射
+* org.suntao.easyorm.session 数据库连接
+
+# 思路简记
+* SqlSession中并不建立连接 只有创建Exec时 才建立连接
+* 代理调用Exector 
+* DefaultExecutor中调用 反射完成从行到实体的映射
+
+# 待解决问题
+* xml解析的时候 出错需要提示某一些字符需要转义
+* 需要学习log4j和Exception
+
+***
+* SunTao UESTC mrls@live.cn

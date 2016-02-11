@@ -1,0 +1,4 @@
+package org.suntao.easyorm.map;
+
+public class Mapping {
+}

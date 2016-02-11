@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE easyorm SYSTEM "easyorm.dtd">
+<easyorm>
+	<configure>
+		<database>
+			<db_name>MySQL</db_name>
+			<db_driver>com.mysql.jdbc.Driver</db_driver>
+			<db_url>jdbc:mysql://42.96.206.67:3306/stu?useUnicode=true&amp;characterEncoding=UTF-8</db_url>
+			<db_username>stu</db_username>
+			<db_password>admin</db_password>
+		</database>
+		<mapper id="usermapper" location="org/suntao/mapper/usermapper.xml" />
+	</configure>
+</easyorm>

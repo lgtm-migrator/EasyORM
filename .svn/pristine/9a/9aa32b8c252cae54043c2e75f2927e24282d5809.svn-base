@@ -1,0 +1,88 @@
+package org.suntao.easyorm.map;
+
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
+
+public class SimpleMapping implements Mapping {
+
+	/**
+	 * 简易映射
+	 * <p>
+	 * 通过resultMap中的class对象,动态构造实体<br>
+	 * 并通过反射,遍历实体的fields和相应type,从resultSet获取数据并填充
+	 * <p>
+	 * 需要注意的是,field中的name需要与column相对应(不区分大小写)
+	 * <p>
+	 * 此方法只对resultSet当前行操作
+	 * 
+	 * @param <T>
+	 * 
+	 * @param objectClass
+	 *            需要返回的对象Class
+	 * @param resultSet
+	 *            查询的结果集
+	 * @return 对应实体
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> T getModel(ResultMap<T> resultMap, ResultSet resultSet) {
+		Object result = null;
+		try {
+			// 构造实体
+			result = Class.forName(resultMap.getModelClass().getName())
+					.newInstance();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		// 获取实体的各个字段(域)/field
+		Field[] fields = result.getClass().getDeclaredFields();
+		// 遍历
+		for (Field f : fields) {
+			// 使该域可写
+			f.setAccessible(true);
+			// 获取该域的name
+			String fieldName = f.getName();
+			// 获取该域的type(class)
+			Class<?> type = f.getType();
+			try {
+				Object value = null;
+				// 判断,分别处理
+				if (type.equals(String.class))
+					value = resultSet.getString(fieldName);
+				else if (type.equals(Integer.class) || type.equals(int.class))
+					value = resultSet.getInt(fieldName);
+				else if (type.equals(Date.class))
+					value = resultSet.getDate(fieldName);
+				else if (type.equals(Float.class) || type.equals(float.class))
+					value = resultSet.getFloat(fieldName);
+				else if (type.equals(Long.class) || type.equals(long.class))
+					value = resultSet.getLong(fieldName);
+				else if (type.equals(BigDecimal.class))
+					value = resultSet.getBigDecimal(fieldName);
+				else {
+					// 此处需要log4j提示 没有相应类型处理方式
+					continue;
+				}
+				// 如果value不为null,就填充(填充null的话会抛出异常,但是数据库中有些项也有可能是null)
+				if (value != null)
+					f.set(result, value);
+			} catch (SQLException e) {
+				// 此处需要log4j提示,根据name,没有相应域
+				e.printStackTrace();
+				continue;
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+		return (T) result;
+	}
+}

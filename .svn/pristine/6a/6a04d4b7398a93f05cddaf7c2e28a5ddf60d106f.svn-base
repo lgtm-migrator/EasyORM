@@ -1,0 +1,7 @@
+package org.suntao.easyorm.map;
+
+import java.sql.ResultSet;
+
+public interface Mapping {
+	public <T> T getModel(ResultMap<T> resultMap, ResultSet resultSet);
+}

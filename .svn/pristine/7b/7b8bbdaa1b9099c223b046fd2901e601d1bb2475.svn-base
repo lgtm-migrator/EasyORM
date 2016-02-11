@@ -1,0 +1,25 @@
+package org.suntao.easyorm.annotation;
+
+public class Course {
+	private String courseName;
+	private int hours;
+	private float score;
+	public String getCourseName() {
+		return courseName;
+	}
+	public int getHours() {
+		return hours;
+	}
+	public float getScore() {
+		return score;
+	}
+	public void setCourseName(String courseName) {
+		this.courseName = courseName;
+	}
+	public void setHours(int hours) {
+		this.hours = hours;
+	}
+	public void setScore(float score) {
+		this.score = score;
+	}
+}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT easyorm (configure)>
+<!ELEMENT configure (mapper*,database?)>
+<!ELEMENT mapper EMPTY>
+<!ELEMENT database (db_name?,db_driver,db_url,db_username,db_password)>
+<!ELEMENT db_name (#PCDATA)>
+<!ELEMENT db_driver (#PCDATA)>
+<!ELEMENT db_url (#PCDATA)>
+<!ELEMENT db_username (#PCDATA)>
+<!ELEMENT db_password (#PCDATA)>
+<!ATTLIST mapper id ID #REQUIRED>
+<!ATTLIST mapper location CDATA #REQUIRED>

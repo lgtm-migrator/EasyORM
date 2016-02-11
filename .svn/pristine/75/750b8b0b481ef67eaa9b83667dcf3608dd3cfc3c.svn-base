@@ -1,0 +1,24 @@
+package org.suntao.easyorm.session.defaults;
+
+import org.suntao.easyorm.session.SqlSession;
+import org.suntao.easyorm.session.SqlSessionBuilder;
+import org.suntao.easyorm.xmlparse.EasyormConfig;
+import org.suntao.easyorm.xmlparse.XmlParse;
+
+public class DefaultSqlSessionBuilder implements SqlSessionBuilder {
+	private EasyormConfig easyOrmConfig;
+
+	public DefaultSqlSessionBuilder(String xmlFileLocation) {
+		this.easyOrmConfig = XmlParse.configParse(xmlFileLocation);
+	}
+
+	public DefaultSqlSessionBuilder(EasyormConfig easyormConfig) {
+		this.easyOrmConfig = easyormConfig;
+	}
+
+	@Override
+	public SqlSession openSession() {
+		return new DefaultSqlSession(easyOrmConfig);
+	}
+
+}

@@ -1,0 +1,65 @@
+package org.suntao.easyorm.map;
+
+import java.util.ArrayList;
+
+/**
+ * 实体 JDBC映射配置
+ * <p>
+ * 配置JDBC查询结果集ResultSet中的列与实体中属性的对应关系
+ * 
+ * @author suntao
+ * 
+ * @param <T>
+ */
+public class MapConfig<T> {
+	private Class<T> modelClass;
+	private ArrayList<MapConfigItem> properties;
+
+	public MapConfig(Class<T> modelClass, ArrayList<MapConfigItem> properties) {
+		super();
+		this.modelClass = modelClass;
+		this.properties = properties;
+	}
+
+	public MapConfig() {
+		super();
+	}
+
+	public Class<T> getModelClass() {
+		return modelClass;
+	}
+
+	public void setModelClass(Class<T> modelClass) {
+		this.modelClass = modelClass;
+	}
+
+	public ArrayList<MapConfigItem> getProperties() {
+		return properties;
+	}
+
+	public void setProperties(ArrayList<MapConfigItem> properties) {
+		this.properties = properties;
+	}
+
+	public MapConfigItem getItemByNameInModel(String nameInModel) {
+		MapConfigItem result = null;
+		for (MapConfigItem m : properties) {
+			if (m.getNameInModel().equals(nameInModel)) {
+				result = m;
+				break;
+			}
+		}
+		return result;
+	}
+
+	public MapConfigItem getItemByNameInColumn(String nameInColumn) {
+		MapConfigItem result = null;
+		for (MapConfigItem m : properties) {
+			if (m.getNameInColume().equals(nameInColumn)) {
+				result = m;
+				break;
+			}
+		}
+		return result;
+	}
+}

@@ -1,0 +1,28 @@
+package org.suntao.easyorm.executor;
+
+import java.util.List;
+
+import org.suntao.easyorm.map.ResultMap;
+
+public interface Exceutor {
+	/**
+	 * 查询结果并返回实体类型列表
+	 * <p>
+	 * 通过JDBC查询,返回的ResultSet通过反射,转化成实体列表
+	 * 
+	 * @param resultMap
+	 *            结果Map
+	 * @param sqlStr
+	 *            SQL字符串
+	 * @return 实体列表
+	 */
+	<T> List<T> selectList(ResultMap resultMap, String sqlStr);
+
+	<T> List<T> selectOne(ResultMap resultMap, String sqlStr);
+
+	Integer update(String sqlStr);
+
+	Integer delete(String sqlStr);
+
+	Integer insert(String sqlStr);
+}

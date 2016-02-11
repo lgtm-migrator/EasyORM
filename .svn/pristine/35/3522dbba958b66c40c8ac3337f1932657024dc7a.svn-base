@@ -1,0 +1,13 @@
+package org.suntao.easyorm.annotation;
+
+import java.util.List;
+
+public interface courseMapper {
+	Boolean deleteCourse(int id);
+
+	List<Course> selectCourses();
+
+	Course selectOne(int id);
+
+	int updateCourse(Course course);
+}

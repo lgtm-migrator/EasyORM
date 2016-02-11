@@ -1,0 +1,94 @@
+package org.suntao.easyorm.map;
+
+import java.util.ArrayList;
+
+/**
+ * ResultSet映射
+ * <p>
+ * 配置JDBC查询结果集ResultSet中的列与实体中属性的对应关系
+ * 
+ * @author suntao
+ * 
+ * @param <T>
+ */
+public class ResultMap<T> {
+	/**
+	 * resultMap的ID 用于查找
+	 */
+	private String resultMapID;
+
+	public ResultMap(String resultMapID, Class<T> modelClass,
+			ArrayList<ResultMapItem> properties) {
+		super();
+		this.resultMapID = resultMapID;
+		this.modelClass = modelClass;
+		this.properties = properties;
+	}
+
+	/**
+	 * 实体Class
+	 * <p>
+	 * 用于反射时建立实体
+	 */
+	private Class<T> modelClass;
+	/**
+	 * 实体的fields与JDBC结果集columns之间名称的对应关系
+	 */
+	private ArrayList<ResultMapItem> properties;
+
+	public ResultMap(Class<T> modelClass, ArrayList<ResultMapItem> properties) {
+		super();
+		this.modelClass = modelClass;
+		this.properties = properties;
+	}
+
+	public ResultMap() {
+		super();
+	}
+
+	public Class<T> getModelClass() {
+		return modelClass;
+	}
+
+	public void setModelClass(Class<T> modelClass) {
+		this.modelClass = modelClass;
+	}
+
+	public ArrayList<ResultMapItem> getProperties() {
+		return properties;
+	}
+
+	public void setProperties(ArrayList<ResultMapItem> properties) {
+		this.properties = properties;
+	}
+
+	public ResultMapItem getItemByNameInModel(String nameInModel) {
+		ResultMapItem result = null;
+		for (ResultMapItem m : properties) {
+			if (m.getNameInModel().equals(nameInModel)) {
+				result = m;
+				break;
+			}
+		}
+		return result;
+	}
+
+	public ResultMapItem getItemByNameInColumn(String nameInColumn) {
+		ResultMapItem result = null;
+		for (ResultMapItem m : properties) {
+			if (m.getNameInColume().equals(nameInColumn)) {
+				result = m;
+				break;
+			}
+		}
+		return result;
+	}
+
+	public String getResultMapName() {
+		return resultMapID;
+	}
+
+	public void setResultMapName(String resultMapName) {
+		this.resultMapID = resultMapName;
+	}
+}

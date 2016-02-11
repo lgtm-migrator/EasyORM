@@ -1,0 +1,60 @@
+package org.suntao.easyorm.map;
+
+import java.lang.reflect.Type;
+
+/**
+ * 记录实体的每一个属性与列对应的关系
+ * 
+ * @author suntao
+ * 
+ */
+public class MapConfigItem {
+	/**
+	 * 在实体中的name
+	 */
+	private String nameInModel;
+	/**
+	 * 在resultset中的name
+	 */
+	private String nameInColume;
+	/**
+	 * 类型
+	 */
+	private Type type;
+
+	public String getNameInModel() {
+		return nameInModel;
+	}
+
+	public void setNameInModel(String nameInModel) {
+		this.nameInModel = nameInModel;
+	}
+
+	public String getNameInColume() {
+		return nameInColume;
+	}
+
+	public void setNameInColume(String nameInColume) {
+		this.nameInColume = nameInColume;
+	}
+
+	public Type getType() {
+		return type;
+	}
+
+	public void setType(Type type) {
+		this.type = type;
+	}
+
+	public MapConfigItem(String nameInModel, String nameInColume, Type type) {
+		super();
+		this.nameInModel = nameInModel;
+		this.nameInColume = nameInColume;
+		this.type = type;
+	}
+
+	public MapConfigItem() {
+
+	}
+
+}

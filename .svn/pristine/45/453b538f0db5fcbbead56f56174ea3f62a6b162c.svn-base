@@ -1,0 +1,7 @@
+package org.suntao.easyorm.executor;
+
+public class executortest {
+	public static void main(String[] args) {
+
+	}
+}
