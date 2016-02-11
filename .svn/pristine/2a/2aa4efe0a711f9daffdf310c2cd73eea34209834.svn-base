@@ -1,5 +1,0 @@
-package org.suntao.easyorm.session;
-
-public interface SqlSessionBuilder {
-	SqlSession openSession();
-}
