@@ -61,9 +61,3 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-
-
-.svn/
-
-.gitignore
-.gitattributes
