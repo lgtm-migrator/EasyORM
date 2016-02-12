@@ -20,6 +20,7 @@ public class session {
 			while (rs.next()) {
 				System.out.println(rs.getString("Course"));
 			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -19,21 +19,14 @@ import org.suntao.easyorm.xmlparse.EasyormConfig;
 
 public class fullTest {
 	SqlSessionFactory sqlSessionFactory;
-	DefaultSqlSession sqlSession;
+	SqlSession sqlSession;
 	courseinfoMapper courseinfomapper;
 
 	@Before
 	public void setUp() throws Exception {
-		sqlSessionFactory = new DefaultSqlSessionFactory(
-				"src/test/resources/xmltest.xml");
-		sqlSession = (DefaultSqlSession) sqlSessionFactory.openSession();
-		List<Class<?>> mapperList = new ArrayList<Class<?>>();
-		mapperList.add(courseinfoMapper.class);
-		SimpleScanner scanner = new SimpleScanner();
-		scanner.setDaoClasses(mapperList);
-		scanner.scan();
-		sqlSession.setMapStatments(scanner.getScannedMapStatment());
-		sqlSession.setResultMaps(scanner.getScanedResultMap());
+		sqlSessionFactory = new DefaultSqlSessionFactory(this.getClass()
+				.getClassLoader().getResource("xmltest.xml").getPath());
+		sqlSession = sqlSessionFactory.openSession();
 		courseinfomapper = sqlSession.getMapper(courseinfoMapper.class);
 	}
 
@@ -44,15 +37,5 @@ public class fullTest {
 			System.out.println(c);
 		}
 
-	}
-
-	@Test
-	public void testOne() {
-		System.out.println(courseinfomapper.selectOne(3));
-	}
-
-	@Test
-	public void testCount() {
-		System.out.println(courseinfomapper.count());
 	}
 }

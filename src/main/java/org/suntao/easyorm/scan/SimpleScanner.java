@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.suntao.easyorm.annotation.Param;
 import org.suntao.easyorm.annotation.SQL;
 import org.suntao.easyorm.map.MapStatment;
@@ -25,12 +26,12 @@ import org.suntao.easyorm.xmlparse.EasyormConfig;
  *
  */
 public class SimpleScanner implements Scanner {
-
 	private List<Class<?>> daoClasses;
 	private String daoPath;
 	private EasyormConfig easyormConfig;
 	private Map<String, MapStatment> scannedMapStatment;
 	private Map<String, ResultMapConfig<?>> scannedResultMap;
+	private static Logger logger = Logger.getLogger(Scanner.class);
 
 	public SimpleScanner() {
 		super();
@@ -71,6 +72,7 @@ public class SimpleScanner implements Scanner {
 		Boolean result = false;
 		Map<String, MapStatment> scanedMapStatment = new HashMap<String, MapStatment>();
 		Map<String, ResultMapConfig<?>> scanedResultMap = new HashMap<String, ResultMapConfig<?>>();
+		logger.info("开始对DAO接口的扫描,并存储为MapStatment和ResultMap");
 		try {
 			for (Class<?> currentClass : daoClasses) {
 				for (Method currentMethod : currentClass.getDeclaredMethods()) {
@@ -89,8 +91,13 @@ public class SimpleScanner implements Scanner {
 			}
 			this.scannedResultMap = scanedResultMap;
 			this.scannedMapStatment = scanedMapStatment;
+			logger.info(String.format(
+					"扫描完成,扫描的MapStatment的size为%d,ResultMap的size为:%d",
+					scanedMapStatment.size(), scanedResultMap.size()));
 			result = true;
 		} catch (Exception e) {
+			logger.error("由于各种原因扫描失败");
+			e.printStackTrace();
 			result = false;
 		}
 		return result;
@@ -101,6 +108,7 @@ public class SimpleScanner implements Scanner {
 	 */
 	public void scanDaoClasses() {
 		// TO DO
+		this.daoClasses = new ArrayList<Class<?>>();
 	}
 
 	public List<MapStatment> scanMapStatment() {
@@ -210,24 +218,25 @@ public class SimpleScanner implements Scanner {
 					.getGenericReturnType();
 			Type[] types = parameterizedType.getActualTypeArguments();
 			if (types.length != 1) {
-
+				logger.error("List 参数过多过少");
 				// 如果List的参数过多或者过少= =,这应该不会发生
 				resultMappingType = ResultMappingType.OTHER;
 			}
 			try {
 				modelClass = Class.forName(types[0].getTypeName());
 			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error(String.format("并没有%s这个类%s",
+						types[0].getTypeName(), e));
 			}
 			resultMappingType = ResultMappingType.MODELLIST;
 		} else if (returnClass.equals(Void.class)) {
-			// log4j提示不应有返回为空的值
+			logger.error("方法不应该定义空返回类型,如果只想执行语句的话,可以定义int返回");
+			resultMappingType = ResultMappingType.OTHER;
 		} else if (!returnClass.isPrimitive()) {
 			modelClass = method.getReturnType();
 			resultMappingType = ResultMappingType.ONEMODEL;
 		} else {
-			// log4j需要进行提示,无法进行处理
+			logger.warn(String.format("当前类型不受到支持,%s", returnClass));
 			resultMappingType = ResultMappingType.OTHER;
 		}
 		resultMap.setResultMapID(resultMapId);

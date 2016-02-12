@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 /**
  * 简化结果集映射器
  * <p>
@@ -19,6 +21,7 @@ import java.util.List;
  *
  */
 public class SimpleResultMapping implements ResultMapping {
+	private static Logger logger = Logger.getLogger(ResultMapping.class);
 
 	@Override
 	public Boolean getBoolean(ResultMapConfig<?> resultMap, ResultSet resultSet) {
@@ -117,15 +120,18 @@ public class SimpleResultMapping implements ResultMapping {
 				else if (type.equals(BigDecimal.class))
 					value = resultSet.getBigDecimal(fieldName);
 				else {
-					// 此处需要log4j提示 没有相应类型处理方式
+					logger.warn(String.format("没有Type{%s}的相应处理方式",
+							type.toString()));
 					continue;
 				}
 				// 如果value不为null,就填充(填充null的话会抛出异常,但是数据库中有些项也有可能是null)
 				if (value != null)
 					f.set(result, value);
 			} catch (SQLException e) {
-				// 此处需要log4j提示,根据name,没有相应字段
-				e.printStackTrace();
+				logger.warn(String.format(
+						"Class:%s,Field:%s,该字段在ResultSet中不存在", result.getClass().getName(),
+						fieldName));
+//				e.printStackTrace();
 				continue;
 			} catch (IllegalArgumentException e) {
 				e.printStackTrace();
@@ -139,6 +145,8 @@ public class SimpleResultMapping implements ResultMapping {
 	@Override
 	public Object mapObject(ResultMapConfig<?> resultMap, ResultSet resultSet) {
 		Object result = null;
+		logger.info(String.format("开始一次结果映射,返回类型为%s,目标实体为%s",
+				resultMap.getResultType(), resultMap.getModelClass()));
 		try {
 			ResultMappingType resultMappingType = resultMap.getResultType();
 			switch (resultMappingType) {
@@ -161,26 +169,17 @@ public class SimpleResultMapping implements ResultMapping {
 				}
 				break;
 			case OTHER:
-				/**
-				 * TODO
-				 * <p>
-				 * 此处需要进行提示
-				 */
+				logger.warn("不可映射这种类型,返回null");
+				result = null;
 				break;
 			default:
-				/**
-				 * 此处需要进行提示
-				 */
+				logger.error("出现了枚举不存在的类型,或者说本方法没有进行处理,请检查源码");
 				break;
 			}
 		} catch (NullPointerException nullPointerException) {
-			/**
-			 * 此处需要提示
-			 * <p>
-			 * ResultMap没有配置返回类型
-			 */
 			nullPointerException.printStackTrace();
 		}
+		logger.info("结果映射完成");
 		return result;
 	}
 }

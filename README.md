@@ -50,6 +50,7 @@
 > 需要对参数进行封装,以使用实体的属性查询
 * 现在使用SqlSession中的returnConnection关闭连接,之后需要设计一个连接管理器ConnectionManager
 > 可以将连接池集成在连接管理器中
+* 需要确定是否可以直接映射ResultSet
 
 ## 知识储备
 * log4j

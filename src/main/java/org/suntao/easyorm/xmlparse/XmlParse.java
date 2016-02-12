@@ -9,6 +9,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.log4j.Logger;
 import org.suntao.easyorm.map.MapStatment;
 import org.suntao.easyorm.map.ResultMapConfig;
 import org.w3c.dom.Document;
@@ -25,6 +26,9 @@ import org.xml.sax.SAXException;
  * 
  */
 public class XmlParse {
+
+	private static Logger logger = Logger.getLogger(XmlParse.class);
+
 	/**
 	 * 配置文件格式化
 	 * <p>
@@ -36,9 +40,15 @@ public class XmlParse {
 	 * @return easyorm配置实体
 	 */
 	public static EasyormConfig configParse(File xml) {
+		logger.info(String.format("开始从file:%s扫描easyormconfig实体", xml.getName()));
 		EasyormConfig result = new EasyormConfig();
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		factory.setValidating(true);
+		factory.setValidating(true);// 设定验证dtd
+		/**
+		 * 使用本方法跳过无用空格
+		 * <p>
+		 * 如果看不懂为什么要跳过空格请参阅xml解析相关章节
+		 */
 		factory.setIgnoringElementContentWhitespace(true);
 		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -53,8 +63,10 @@ public class XmlParse {
 		} catch (SAXException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			logger.error("输入输出错误,请检查文件是否存在");
 			e.printStackTrace();
 		}
+		logger.info("EasyORMConfig实体扫描完成");
 		return result;
 	}
 
@@ -87,12 +99,17 @@ public class XmlParse {
 	public static Map<String, String> parseDAOandMapperXmlConfig(Document doc) {
 		Map<String, String> result = new HashMap<String, String>();
 		Element daoElement = (Element) doc.getElementsByTagName("dao").item(0);
+		String daojavapath = null;
+		String mapperxmlpath = null;
 		if (daoElement != null) {
-			String daojavapath = daoElement.getAttribute("daojavapath");
-			String mapperxmlpath = daoElement.getAttribute("mapperxmlpath");
+			daojavapath = daoElement.getAttribute("daojavapath");
+			mapperxmlpath = daoElement.getAttribute("mapperxmlpath");
 			result.put("daojavapath", daojavapath);
 			result.put("mapperxmlpath", mapperxmlpath);
 		}
+		logger.info(String.format(
+				"dao和mapper,xml的地址扫描完成,Dao Path:%s,Xml Path:%s", daojavapath,
+				mapperxmlpath));
 		return result;
 	}
 
@@ -117,6 +134,7 @@ public class XmlParse {
 				result.set(child.getNodeName(), child.getTextContent());
 			}
 		}
+		logger.info("数据库配置扫描完成");
 		return result;
 	}
 

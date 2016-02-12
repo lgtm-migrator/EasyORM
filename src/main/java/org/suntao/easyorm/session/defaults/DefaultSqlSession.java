@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.xml.Log4jEntityResolver;
 import org.suntao.easyorm.executor.defaults.SimpleExecutor;
 import org.suntao.easyorm.map.MapStatment;
 import org.suntao.easyorm.map.ResultMapConfig;
@@ -23,6 +25,7 @@ public class DefaultSqlSession implements SqlSession {
 	private Map<String, MapStatment> mapStatments;
 	private Map<String, ResultMapConfig<?>> resultMaps;
 	private Scanner scanner;
+	private static Logger logger = Logger.getLogger(SqlSession.class);
 
 	public DefaultSqlSession(EasyormConfig easyormConfig) {
 		this.easyormConfig = easyormConfig;
@@ -36,20 +39,17 @@ public class DefaultSqlSession implements SqlSession {
 
 	@Override
 	public Connection getConnection() {
-		try {
-			Class.forName(databaseConfig.getDriver());
-		} catch (ClassNotFoundException e) {
-			// TO DO
-			e.printStackTrace();
-		}
 		Connection result = null;
 		try {
+			Class.forName(databaseConfig.getDriver());
 			result = DriverManager.getConnection(databaseConfig.getJdbcurl(),
 					databaseConfig.getUsername(), databaseConfig.getPassword());
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		} catch (SQLException e) {
-			// TO DO
 			e.printStackTrace();
 		}
+		logger.info("创建了一个数据库连接" + result);
 		return result;
 	}
 
@@ -90,10 +90,10 @@ public class DefaultSqlSession implements SqlSession {
 
 	@Override
 	public void returnConnection(Connection conn) {
+		logger.info("返回了一个数据库连接" + conn);
 		try {
 			conn.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
