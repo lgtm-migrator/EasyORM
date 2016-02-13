@@ -1,9 +1,18 @@
 package org.suntao.easyorm.xmlparse;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -40,7 +49,7 @@ public class XmlParse {
 	 * @return easyorm配置实体
 	 */
 	public static EasyormConfig configParse(File xml) {
-		logger.info(String.format("开始从file:%s扫描easyormconfig实体", xml.getName()));
+		logger.debug(String.format("开始从file:%s扫描easyormconfig实体", xml.getName()));
 		EasyormConfig result = new EasyormConfig();
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setValidating(true);// 设定验证dtd
@@ -66,7 +75,7 @@ public class XmlParse {
 			logger.error("输入输出错误,请检查文件是否存在");
 			e.printStackTrace();
 		}
-		logger.info("EasyORMConfig实体扫描完成");
+		logger.debug("EasyORMConfig实体扫描完成");
 		return result;
 	}
 
@@ -102,12 +111,12 @@ public class XmlParse {
 		String daojavapath = null;
 		String mapperxmlpath = null;
 		if (daoElement != null) {
-			daojavapath = daoElement.getAttribute("daojavapath");
-			mapperxmlpath = daoElement.getAttribute("mapperxmlpath");
+			daojavapath = daoElement.getAttribute("daopackage");
+			mapperxmlpath = daoElement.getAttribute("mapperxmlpackage");
 			result.put("daojavapath", daojavapath);
 			result.put("mapperxmlpath", mapperxmlpath);
 		}
-		logger.info(String.format(
+		logger.debug(String.format(
 				"dao和mapper,xml的地址扫描完成,Dao Path:%s,Xml Path:%s", daojavapath,
 				mapperxmlpath));
 		return result;
@@ -134,7 +143,7 @@ public class XmlParse {
 				result.set(child.getNodeName(), child.getTextContent());
 			}
 		}
-		logger.info("数据库配置扫描完成");
+		logger.debug("数据库配置扫描完成");
 		return result;
 	}
 
@@ -174,15 +183,4 @@ public class XmlParse {
 		return result;
 	}
 
-	/**
-	 * 解析ResultMap
-	 * 
-	 * @param doc
-	 * @return
-	 */
-	public static Map<String, ResultMapConfig<?>> parseResultMap(Document doc) {
-		Map<String, ResultMapConfig<?>> result = new HashMap<String, ResultMapConfig<?>>();
-		// TO DO
-		return result;
-	}
 }

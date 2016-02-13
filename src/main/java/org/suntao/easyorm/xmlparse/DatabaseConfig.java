@@ -54,8 +54,9 @@ public class DatabaseConfig {
 	}
 
 	public String getInfoStr() {
-		return String.format("%s\t%s\t%s\t%s\t%s", db_name, db_driver, db_url,
-				db_username, db_password);
+		return String.format(
+				"Name:%s Driver:%s URL:%s Username:%s password:%s", db_name,
+				db_driver, db_url, db_username, db_password);
 	}
 
 	public String getJdbcurl() {
@@ -93,6 +94,11 @@ public class DatabaseConfig {
 		} else if (fieldName.equals("db_url"))
 			this.db_url = value;
 
+	}
+
+	@Override
+	public String toString() {
+		return getInfoStr();
 	}
 
 	public void setDriver(String driver) {

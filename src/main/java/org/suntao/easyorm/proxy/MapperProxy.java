@@ -2,10 +2,7 @@ package org.suntao.easyorm.proxy;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.sql.ResultSet;
 import java.util.Map;
-import java.util.Scanner;
-
 import org.apache.log4j.Logger;
 import org.suntao.easyorm.executor.Executor;
 import org.suntao.easyorm.map.MapStatment;

@@ -9,7 +9,7 @@
 <!ELEMENT db_url (#PCDATA)>
 <!ELEMENT db_username (#PCDATA)>
 <!ELEMENT db_password (#PCDATA)>
-<!ATTLIST dao daojavapath CDATA #IMPLIED>
-<!ATTLIST dao mapperxmlpath CDATA #IMPLIED>
+<!ATTLIST dao daopackage CDATA #IMPLIED>
+<!ATTLIST dao mapperxmlpackage CDATA #IMPLIED>
 <!ATTLIST mapper id ID #REQUIRED>
 <!ATTLIST mapper location CDATA #REQUIRED>

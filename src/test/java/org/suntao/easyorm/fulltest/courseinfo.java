@@ -7,6 +7,7 @@ public class courseinfo {
 	float score;
 	int teacherid;
 
+	@Override
 	public String toString() {
 		return String.format("%d %d %d %s", courseid, teacherid, classhour,
 				course);

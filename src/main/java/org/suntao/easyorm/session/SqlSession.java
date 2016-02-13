@@ -10,26 +10,34 @@ import java.sql.Connection;
  */
 public interface SqlSession {
 	/**
-	 * 获取数据库连接
+	 * 返回一个新的数据库连接
+	 * <p>
+	 * java.sql.Connection
 	 * 
-	 * @return
+	 * @return 数据库连接
 	 */
 	Connection getConnection();
 
 	/**
 	 * 获取Mapper
 	 * <p>
-	 * 使用代理方法 通过接口 调用executor
+	 * 通过使用动态代理,可以调用DAO直接执行SQL<br>
+	 * 返回的实际上是一个MapperProxy
 	 * 
 	 * @param mapperClass
-	 * @return
+	 * @return 一个mapper代理
 	 */
 	<T> T getMapper(Class<T> mapperClass);
 
 	/**
-	 * 返回一个连接
+	 * 返回一个连接到SqlSession留待处理
+	 * <p>
+	 * 通常有两种情况<br>
+	 * 如果没有数据连接池,就关闭连接<br>
+	 * 如果使用数据连接池,就将该Connection重新放入池中
 	 * 
 	 * @param conn
+	 *            一个数据库连接
 	 */
 	void returnConnection(Connection conn);
 }

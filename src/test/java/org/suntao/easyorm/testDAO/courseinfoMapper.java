@@ -1,8 +1,9 @@
-package org.suntao.easyorm.fulltest;
+package org.suntao.easyorm.testDAO;
 
 import java.util.List;
 
 import org.suntao.easyorm.annotation.SQL;
+import org.suntao.easyorm.fulltest.courseinfo;
 
 public interface courseinfoMapper {
 	@SQL(value = "select * from courseinfo")

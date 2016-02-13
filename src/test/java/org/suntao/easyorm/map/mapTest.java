@@ -2,14 +2,7 @@ package org.suntao.easyorm.map;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.List;
-
-import org.suntao.easyorm.executor.defaults.SimpleExecutor;
-import org.suntao.easyorm.session.SqlSession;
-import org.suntao.easyorm.session.defaults.DefaultSqlSessionFactory;
 
 public class mapTest {
 	/**

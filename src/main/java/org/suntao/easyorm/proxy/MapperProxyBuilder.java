@@ -3,10 +3,16 @@ package org.suntao.easyorm.proxy;
 import java.lang.reflect.Proxy;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.suntao.easyorm.executor.Executor;
 import org.suntao.easyorm.map.MapStatment;
 
 public class MapperProxyBuilder {
+	/**
+	 * log4j
+	 **/
+	private static Logger logger = Logger.getLogger(MapperProxyBuilder.class);
+
 	/**
 	 * 获取代理对象
 	 * <p>

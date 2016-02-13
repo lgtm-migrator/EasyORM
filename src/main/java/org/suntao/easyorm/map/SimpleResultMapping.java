@@ -129,9 +129,9 @@ public class SimpleResultMapping implements ResultMapping {
 					f.set(result, value);
 			} catch (SQLException e) {
 				logger.warn(String.format(
-						"Class:%s,Field:%s,该字段在ResultSet中不存在", result.getClass().getName(),
-						fieldName));
-//				e.printStackTrace();
+						"Class:%s,Field:%s,该字段在ResultSet中不存在", result
+								.getClass().getName(), fieldName));
+				// e.printStackTrace();
 				continue;
 			} catch (IllegalArgumentException e) {
 				e.printStackTrace();
@@ -145,7 +145,7 @@ public class SimpleResultMapping implements ResultMapping {
 	@Override
 	public Object mapObject(ResultMapConfig<?> resultMap, ResultSet resultSet) {
 		Object result = null;
-		logger.info(String.format("开始一次结果映射,返回类型为%s,目标实体为%s",
+		logger.debug(String.format("开始一次结果映射,返回类型为%s,目标实体为%s",
 				resultMap.getResultType(), resultMap.getModelClass()));
 		try {
 			ResultMappingType resultMappingType = resultMap.getResultType();
@@ -164,7 +164,6 @@ public class SimpleResultMapping implements ResultMapping {
 					if (resultSet.next())
 						result = getModel(resultMap, resultSet);
 				} catch (SQLException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				break;
@@ -179,7 +178,7 @@ public class SimpleResultMapping implements ResultMapping {
 		} catch (NullPointerException nullPointerException) {
 			nullPointerException.printStackTrace();
 		}
-		logger.info("结果映射完成");
+		logger.debug("结果映射完成");
 		return result;
 	}
 }

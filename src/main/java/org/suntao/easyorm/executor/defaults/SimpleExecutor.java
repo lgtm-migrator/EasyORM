@@ -5,15 +5,9 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.suntao.easyorm.executor.Executor;
 import org.suntao.easyorm.map.MapStatment;
-import org.suntao.easyorm.map.ResultMapConfig;
 import org.suntao.easyorm.map.ResultMapping;
 import org.suntao.easyorm.session.SqlSession;
 

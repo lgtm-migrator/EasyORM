@@ -34,6 +34,15 @@ public class EasyormConfig {
 		this.mapperConfigs = new HashMap<String, MapperConfig>();
 	}
 
+	@Override
+	public String toString() {
+		String result = null;
+		result = String.format(
+				"DaoPath:%s DBConfig:%s mapperConfigs:%s XmlsPath:%s", daoPath,
+				databaseConfig, mapperConfigs, mapperXmlPath);
+		return result;
+	}
+
 	/**
 	 * EasyORM主配置文件
 	 * 

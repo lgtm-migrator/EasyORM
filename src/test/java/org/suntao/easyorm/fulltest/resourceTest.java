@@ -1,7 +1,5 @@
 package org.suntao.easyorm.fulltest;
 
-import static org.junit.Assert.*;
-
 import java.net.URL;
 import java.util.Properties;
 
