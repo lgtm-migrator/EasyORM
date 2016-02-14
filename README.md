@@ -2,18 +2,20 @@
 * 这是一个基于Java的持久化框架
 * 本框架主要目的用于教学,使读者了解Java高级特性
 * 大量中文注释提供,尽量提供准确的注释
-* 由于本人在架构设计和代码方面的经验不足,所以代码不怎么好看,请谅解,此外,框架构成有可能大幅度改变
+* 由于本人在架构设计和代码方面的经验不足,所以代码的风格和质量都不怎么样,请谅解
 * 如果使用者对于某一个方法,有更好的解决方式,欢迎联系我
 * 虽然已经足够小心,但难免出现bug,如若发现请联系我
 
-## 包简介
-* org.suntao.easyorm.map 实体映射
-* org.suntao.easyorm.xmlparse xml文件解析
-* org.suntao.easyorm.session 数据库连接
-* org.suntao.easyorm.proxy 代理相关 
-* org.suntao.easyorm.annotation 注解
-* org.suntao.easyorm.scan DAO扫描器
-* org.suntao.easyorm.executor SQL解释器
+## 简明使用方式
+* 本项目依赖于log4j,使用时需要将log4j(1.2.17以上版本)添加到项目引用,以及JDBCDriver和EasyORM本身,即,一个可用的EasyORM框架至少需要3个库
+* 编写需要映射的实体,实体属性的名字需要和数据库记录的列名一致(不要求大小写)
+* 编写DAO接口,使用@SQL注解定义sql语句,SQL语句中的参数以?代替,**请注意,方法的参数顺序和sql语句中的?符号顺序需要一一对应**,返回类型可以为List,Boolean,Integer,或者是你自己定义的实体类.**请注意不要使用void为方法的返回类型**	
+* 编写程序,创建SqlSessionFactory,现在推荐使用`DefaultSqlSessionFactory(String JDBCDriver, String url,
+			String username, String passwd)`构造方法创建factory,xml配置文件的使用文档还在编写过程中
+* SqlSession sqlSession=factory.openSession(); //创建SqlSession
+* daoInterface mapper=sqlSession.getMapper(daointerface.class); //获取代理对象
+* MethodReturnType result=mapper.sqlname(param); //完成一次查询
+
 
 ## 思路简记
 * 如果不使用连接池,SqlSession中并不建立连接,只有调用getConnection()时才建立连接,如果使用连接池,getConnection从连接池中取连接
@@ -74,6 +76,10 @@
 	`需要确定ResultSet是否可以关闭Connection`
 
 * 需要确定是否可以让DefaultSqlSession持有一个Connection
+* ~~需要对代理进行缓存以提高性能,避免每次getMapper(somedaointerface)创建新代理~~
+
+	`对代理预缓存的话,直接通过遍历DAO接口创建代理即可完成`
+
 
 ## 知识储备
 * log4j
@@ -93,6 +99,7 @@
 	
 * 2016年2月12日 整合log4j
 * 2016年2月13日 整合DAO接口扫描
+* 2016年2月14日 添加Apache2 开源协议/缓存代理对象/优化了Executor的执行流程
 	
 ***
 ** SunTao UESTC mrls@live.cn **

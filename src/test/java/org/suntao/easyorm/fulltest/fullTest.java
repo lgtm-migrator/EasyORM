@@ -26,9 +26,11 @@ public class fullTest {
 	@Test
 	public void testList() {
 		List<courseinfo> courses = courseinfomapper.selectAll();
+		System.out.println(courseinfomapper.update());
 		for (courseinfo c : courses) {
 			System.out.println(c);
 		}
-
+		courseinfomapper.selectAll();
+		courseinfoMapper courseinfoMapper2=sqlSession.getMapper(courseinfoMapper.class);
 	}
 }

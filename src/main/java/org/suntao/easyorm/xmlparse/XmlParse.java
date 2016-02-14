@@ -56,14 +56,14 @@ public class XmlParse {
 		/**
 		 * 使用本方法跳过无用空格
 		 * <p>
-		 * 如果看不懂为什么要跳过空格请参阅xml解析相关章节
-		 */
+		 * 如果看不懂为什么需要跳过空格请参阅xml解析相关章节
+		 */ 
 		factory.setIgnoringElementContentWhitespace(true);
 		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document xmlDoc = builder.parse(xml);
-			result.setDatabaseConfig(parseDataBaseConfig(xmlDoc));// 获取database实体
-			result.setMapperConfigs(parseMappersConfig(xmlDoc));// 获取mapper实体
+			result.setDatabaseConfig(parseDataBaseConfig(xmlDoc));// 获取database配置实体
+			result.setMapperConfigs(parseMappersConfig(xmlDoc));// 获取mapper位置配置实体
 			Map<String, String> daoMap = parseDAOandMapperXmlConfig(xmlDoc);// 获取dao相关配置
 			result.setDaoPath(daoMap.get("daojavapath"));
 			result.setMapperXmlPath(daoMap.get("mapperxmlpath"));

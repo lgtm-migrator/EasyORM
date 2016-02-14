@@ -14,4 +14,7 @@ public interface courseinfoMapper {
 
 	@SQL(value = "select * from courseinfo")
 	public int count();
+
+	@SQL(value = "UPDATE `courseinfo` set course = '微积分3' where score = 6.0")
+	public int update();
 }

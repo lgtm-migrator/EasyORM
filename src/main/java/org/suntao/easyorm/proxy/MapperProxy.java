@@ -49,7 +49,7 @@ public class MapperProxy implements InvocationHandler {
 		if (mapStatment == null) {
 			logger.warn(String.format("没有查询到%s的MapStatment,动态生成", key));
 			SimpleScanner scanner = new SimpleScanner();
-			ResultMapConfig resultMapConfig = scanner
+			ResultMapConfig<?> resultMapConfig = scanner
 					.scanResultMapConfigOfMethod(method);
 			mapStatment = scanner.scanMapStatmentOfMethod(method);
 			mapStatment.setResultMap(resultMapConfig);
@@ -58,5 +58,10 @@ public class MapperProxy implements InvocationHandler {
 		}
 		result = executor.execute(mapStatment, args);
 		return result;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("MapperProxy,%s", interfaceClass);
 	}
 }
