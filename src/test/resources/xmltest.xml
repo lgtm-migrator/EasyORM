@@ -2,7 +2,7 @@
 <!DOCTYPE easyorm SYSTEM "easyorm.dtd">
 <easyorm>
 	<configure>
-		<dao daopackage="org.suntao.easyorm.testDAO" mapperxmlpackage="/org/suntao/orm/mapper"></dao>
+		<dao daopackage="org.suntao.easyorm.testDAO" mapperxmlpackage="org.suntao.easyorm.testMapper"></dao>
 		<database>
 			<db_name>MySQL</db_name>
 			<db_driver>com.mysql.jdbc.Driver</db_driver>

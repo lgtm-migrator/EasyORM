@@ -1,5 +1,6 @@
 package org.suntao.easyorm.xmlparse;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -10,6 +11,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.suntao.easyorm.map.MapStatment;
 import org.w3c.dom.Document;
 
 /**
@@ -61,6 +63,20 @@ public class xmlparsetest {
 		while (it.hasNext()) {
 			mapperConfig = mapperconfigmap.get(it.next());
 			System.out.println(mapperConfig.getInfoStr());
+		}
+		System.out.println("-----------------end-------------------");
+	}
+
+	@Test
+	public void testMapperXmlParse() {
+		System.out.println("------------dao sql config--------------");
+		Map<String, MapStatment> statments = XmlParse
+				.mapStatmentsParse(new File(
+						"src/test/java/org/suntao/easyorm/testMapper/courseInfoMapper.xml"));
+
+		for (String key : statments.keySet()) {
+			System.out.println(String.format("%s %s", statments.get(key)
+					.getId(), statments.get(key).getStatmentSQL()));
 		}
 		System.out.println("-----------------end-------------------");
 	}

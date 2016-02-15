@@ -56,8 +56,9 @@ public class XmlParse {
 		/**
 		 * 使用本方法跳过无用空格
 		 * <p>
-		 * 如果看不懂为什么需要跳过空格请参阅xml解析相关章节
-		 */ 
+		 * 如果看不懂为什么需要跳过空格<br>
+		 * 请参阅xml解析相关章节
+		 */
 		factory.setIgnoringElementContentWhitespace(true);
 		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -91,6 +92,50 @@ public class XmlParse {
 	 */
 	public static EasyormConfig configParse(String xmlPath) {
 		return configParse(new File(xmlPath));
+	}
+
+	/**
+	 * 将mapper xml配置文件转化成MapStatmnet文件
+	 * 
+	 * @param xml
+	 * @return
+	 */
+	public static Map<String, MapStatment> mapStatmentsParse(File xml) {
+		Map<String, MapStatment> result = new HashMap<String, MapStatment>();
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setValidating(true);// 设定验证dtd
+		factory.setIgnoringElementContentWhitespace(true);
+		DocumentBuilder builder;
+		try {
+			builder = factory.newDocumentBuilder();
+			Document doc = builder.parse(xml);
+			Element root = (Element) doc.getElementsByTagName("mapper").item(0);
+			String mapperid = root.getAttribute("id");
+			String daoclass = root.getAttribute("daoclass");
+			NodeList methods = root.getChildNodes();
+			for (int index = 0; index < methods.getLength(); index++) {
+				Element currentMethod = (Element) methods.item(index);
+				String currentMethodName = currentMethod.getAttribute("name");
+				String sqlStr = currentMethod.getChildNodes().item(0)
+						.getTextContent();
+				MapStatment currentMapStatment = new MapStatment();
+				currentMapStatment.setId(daoclass + "." + currentMethodName);
+				currentMapStatment.setStatmentSQL(sqlStr);
+				result.put(currentMapStatment.getId(), currentMapStatment);
+			}
+
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return result;
 	}
 
 	/**

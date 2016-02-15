@@ -30,7 +30,5 @@ public class fullTest {
 		for (courseinfo c : courses) {
 			System.out.println(c);
 		}
-		courseinfomapper.selectAll();
-		courseinfoMapper courseinfoMapper2=sqlSession.getMapper(courseinfoMapper.class);
 	}
 }

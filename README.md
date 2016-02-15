@@ -7,11 +7,14 @@
 * 虽然已经足够小心,但难免出现bug,如若发现请联系我
 
 ## 简明使用方式
-* 本项目依赖于log4j,使用时需要将log4j(1.2.17以上版本)添加到项目引用,以及JDBCDriver和EasyORM本身,即,一个可用的EasyORM框架至少需要3个库
+* 本项目依赖于log4j,使用时需要将log4j(1.2.17以上版本)添加到Referenced Libraries,以及JDBCDriver和EasyORM本身,即,一个可用的基于EasyORM框架的项目至少需要3个库
 * 编写需要映射的实体,实体属性的名字需要和数据库记录的列名一致(不要求大小写)
 * 编写DAO接口,使用@SQL注解定义sql语句,SQL语句中的参数以?代替,**请注意,方法的参数顺序和sql语句中的?符号顺序需要一一对应**,返回类型可以为List,Boolean,Integer,或者是你自己定义的实体类.**请注意不要使用void为方法的返回类型**	
 * 编写程序,创建SqlSessionFactory,现在推荐使用`DefaultSqlSessionFactory(String JDBCDriver, String url,
 			String username, String passwd)`构造方法创建factory,xml配置文件的使用文档还在编写过程中
+***
+* SqlSessionFactory sessionFactory = new DefaultSqlSessionFactory(
+				driver, url, username, password); //创建factory
 * SqlSession sqlSession=factory.openSession(); //创建SqlSession
 * daoInterface mapper=sqlSession.getMapper(daointerface.class); //获取代理对象
 * MethodReturnType result=mapper.sqlname(param); //完成一次查询
@@ -28,10 +31,13 @@
 
 ## TO DO
 * xml解析的时候,出错需要提示某一些字符需要转义
+
+	`需要确认是否使用XML Schema代替DTD验证`
+
 * ~~Executor中,select需要的结果集,需要的parameter应修改为ResultMap,以提高扩展性 -- 2016-2-2~~
 * ~~需要用preparedStatment取代statment,无论从安全,性能,可读性等各方面  -- 2016-2-11~~
 * ~~需要修改EasyormConfig(以及xml dtd) 需要用户指定实体所在的包~~
-* ~~需要修改executorj接口的parameter,使用mapstatment替换sqlStr,以提高扩展性 -- 2016-2-4~~
+* ~~需要修改executor接口的parameter,使用mapstatment替换sqlStr,以提高扩展性~~
 * ~~需要确定executor与proxy之间是如何调用的 --2016-2-6~~
 
 	`代理调用解释器,解释器调用结果映射器`
@@ -52,11 +58,12 @@
 * ~~需要确定是以xml配置文件优先,还是以注解优先 (在配置文件中确定,给用户选择) --2016-2-7~~
 * ~~需要确定参数和MapStatment的对应关系~~
 
-	`参数位置存储在mapstatment中,参数本身在运行的时候传递给exector`
+	`参数位置存储在mapstatment中,参数本身在运行的时候传递给executor`
 
 * 需要确定反射是否可以获取方法真正的参数名而不是argN
 
 	`暂时没有想到方法,待以后扩展`
+	`已经确认反射无法获取方法的参数名`
 
 * ~~需要了解如何根据包名获取包内所有类,否则只有让用户提供~~
 
@@ -80,6 +87,8 @@
 
 	`对代理预缓存的话,直接通过遍历DAO接口创建代理即可完成`
 
+* 需要确定是否放弃通过XML配置
+
 
 ## 知识储备
 * log4j
@@ -100,6 +109,10 @@
 * 2016年2月12日 整合log4j
 * 2016年2月13日 整合DAO接口扫描
 * 2016年2月14日 添加Apache2 开源协议/缓存代理对象/优化了Executor的执行流程
-	
+* 2016年2月15日 优化Executor执行流程/添加mapper xml
+
+## LICENSE
+[UNDER THE APACHE LICENSE VERSION 2.0](http://www.apache.org/licenses/LICENSE-2.0 )
+
 ***
 ** SunTao UESTC mrls@live.cn **

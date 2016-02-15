@@ -53,6 +53,7 @@ public class MapperProxy implements InvocationHandler {
 					.scanResultMapConfigOfMethod(method);
 			mapStatment = scanner.scanMapStatmentOfMethod(method);
 			mapStatment.setResultMap(resultMapConfig);
+			mapStatment.setId(key);
 			mapStatments.put(key, mapStatment);
 
 		}

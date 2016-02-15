@@ -40,73 +40,96 @@ public class SimpleExecutor implements Executor {
 	@Override
 	public Object execute(MapStatment mapStatment, Object[] params) {
 		Object result = null;
-		ResultSet resultSet = null;
-		conn = sqlSession.getConnection();
-		int influRows;
 		/**
-		 * 在此处使用preparedStatment完成查询 <br>
-		 * 获得ResultSet之后使用Mapping完成映射
+		 * 执行后返回的结果集(如果有)
 		 */
-		try {
-			PreparedStatement preparedStatement = conn
-					.prepareStatement(mapStatment.getStatmentSQL());
-			// 将params数组填入preparedStatment中
-			if (params != null) {
-				for (int index = 1; index <= params.length; index++) {
-					Object currentParam = params[index - 1];
-					if (currentParam instanceof Integer) {
-						preparedStatement.setInt(index, (int) currentParam);
-					} else if (currentParam instanceof String) {
-						preparedStatement.setString(index,
-								(String) currentParam);
-					} else if (currentParam instanceof Date) {
-						preparedStatement.setDate(index, (Date) currentParam);
-					} else {
-						logger.error(String.format("传入的参数错误,当前不可接受%s类型的参数",
-								currentParam.getClass().getName()));
+		ResultSet resultSet = null;
+		/**
+		 * 数据库连接
+		 */
+		conn = sqlSession.getConnection();
+		/**
+		 * 影响行数
+		 */
+		int influRows = -1;
+		/**
+		 * Sql语句
+		 */
+		String sqlStr = mapStatment.getStatmentSQL();
+
+		if (sqlStr == null || sqlStr.isEmpty()) {
+			logger.warn(String.format("请使用注解或者xml配置文件为方法%s配置Sql语句,并确认Sql语句不为空",
+					mapStatment.getId()));
+		} else {
+			/**
+			 * 在此处使用preparedStatment完成查询 <br>
+			 * 获得ResultSet之后使用Mapping完成映射
+			 */
+			try {
+				PreparedStatement preparedStatement = conn
+						.prepareStatement(sqlStr);
+				// 将params数组填入preparedStatment中
+				if (params != null) {
+					for (int index = 1; index <= params.length; index++) {
+						Object currentParam = params[index - 1];
+						if (currentParam instanceof Integer) {
+							preparedStatement.setInt(index, (int) currentParam);
+						} else if (currentParam instanceof String) {
+							preparedStatement.setString(index,
+									(String) currentParam);
+						} else if (currentParam instanceof Date) {
+							preparedStatement.setDate(index,
+									(Date) currentParam);
+						} else {
+							logger.error(String.format("传入的参数错误,当前不可接受%s类型的参数",
+									currentParam.getClass().getName()));
+						}
 					}
 				}
-			}
-			preparedStatement.execute();// 执行语句
-			/**
-			 * 获取结果集<br>
-			 * 如果不是select语句则返回null
-			 */
-			resultSet = preparedStatement.getResultSet();
-			influRows = preparedStatement.getUpdateCount();// 获取影响行数
-			// 如若不是select语句,则无法得到ResultSet
-			if (resultSet == null) {
-				ResultMappingType resultMappingType = mapStatment
-						.getResultMap().getResultType();
-				switch (resultMappingType) {
-				case BOOLEAN:
-					if (influRows > 0)
-						result = true;
-					else
-						result = false;
-					logger.debug("查询返回布尔值," + result);
-					break;
-				case INTEGER:
-					result = influRows;
-					logger.debug("查询返回整型值," + result);
-					break;
-				default:
-					logger.warn("请注意非select SQL仅可使用int和boolean两种返回类型");
-					result = null;
-					break;
+				preparedStatement.execute();// 执行语句
+				/**
+				 * 获取结果集<br>
+				 * 如果不是select语句则返回null
+				 */
+				resultSet = preparedStatement.getResultSet();
+				influRows = preparedStatement.getUpdateCount();// 获取影响行数
+				// 如若不是select语句,则无法得到ResultSet
+				if (resultSet == null) {
+					logger.debug("UPDATE/INSERT/DELETE流程");
+					ResultMappingType resultMappingType = mapStatment
+							.getResultMap().getResultType();
+					switch (resultMappingType) {
+					case BOOLEAN:
+						if (influRows > 0)
+							result = true;
+						else
+							result = false;
+						logger.debug("查询返回布尔值," + result);
+						break;
+					case INTEGER:
+						result = influRows;
+						logger.debug("查询返回整型值," + result);
+						break;
+					default:
+						logger.warn("请注意非select SQL仅可使用int和boolean两种返回类型");
+						result = null;
+						break;
+					}
+				} else {
+					// 如果是select语句则对结果进行映射
+					logger.debug("SELECT流程");
+					result = mapping.mapObject(mapStatment.getResultMap(),
+							resultSet);
 				}
-			} else {
-				// 如果是select语句则对结果进行映射
-				result = mapping.mapObject(mapStatment.getResultMap(),
-						resultSet);
+				preparedStatement.close();
+			} catch (SQLException e) {
+				logger.error("SQL发生错误,请确认SQL语句是否正确,列名,关键字,参数是否正确\n" + e);
+			} catch (Exception e) {
+				logger.error("出现了非SQL Exception:");
+				e.printStackTrace();
 			}
-			preparedStatement.close();
-		} catch (SQLException e) {
-			logger.error("SQL发生错误,有可能是参数和Sql语句不对应");
-			e.printStackTrace();
 		}
 		sqlSession.returnConnection(conn);
 		return result;
 	}
-
 }

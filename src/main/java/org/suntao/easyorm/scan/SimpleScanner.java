@@ -121,7 +121,7 @@ public class SimpleScanner implements Scanner {
 	 */
 	public void scanDaoClasses() {
 		this.daoClasses = new ArrayList<Class<?>>();
-		if (daoClasses != null) {
+		if (daoClasses != null && daoPath != null) {
 			try {
 				Set<Class<?>> classes = getClasses(daoPath);
 				for (Class<?> c : classes) {
@@ -306,7 +306,7 @@ public class SimpleScanner implements Scanner {
 		// 第一个class类的集合
 		Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
 		// 是否循环迭代
-		boolean recursive = true;
+		boolean recursive = false;
 		// 获取包的名字 并进行替换
 		String packageName = packname;
 		String packageDirName = packageName.replace('.', '/');

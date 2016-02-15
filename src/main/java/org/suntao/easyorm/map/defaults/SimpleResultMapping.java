@@ -1,4 +1,4 @@
-package org.suntao.easyorm.map;
+package org.suntao.easyorm.map.defaults;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -9,13 +9,16 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.suntao.easyorm.map.ResultMapConfig;
+import org.suntao.easyorm.map.ResultMapping;
+import org.suntao.easyorm.map.ResultMappingType;
 
 /**
  * 简化结果集映射器
  * <p>
  * 最简单的结果映射<br>
- * 通过反射遍历实体属性并在resultset中查找同名的列并赋值<br>
- * 不对实体的父类的属性进行映射
+ * 通过反射,遍历实体属性,在resultset中查找同名的列并赋值<br>
+ * 不对实体父类的属性进行映射
  * 
  * @author suntao
  *

@@ -6,7 +6,7 @@ import org.suntao.easyorm.annotation.SQL;
 import org.suntao.easyorm.fulltest.courseinfo;
 
 public interface courseinfoMapper {
-	@SQL(value = "select * from courseinfo")
+	@SQL(value = "select * from course")
 	public List<courseinfo> selectAll();
 
 	@SQL(value = "select * from courseinfo where courseid = ?")

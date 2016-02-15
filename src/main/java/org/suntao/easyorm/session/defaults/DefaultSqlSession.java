@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 import org.suntao.easyorm.executor.defaults.SimpleExecutor;
 import org.suntao.easyorm.map.MapStatment;
 import org.suntao.easyorm.map.ResultMapConfig;
-import org.suntao.easyorm.map.SimpleResultMapping;
+import org.suntao.easyorm.map.defaults.SimpleResultMapping;
 import org.suntao.easyorm.proxy.MapperProxyBuilder;
 import org.suntao.easyorm.scan.Scanner;
 import org.suntao.easyorm.scan.SimpleScanner;
@@ -55,7 +55,7 @@ public class DefaultSqlSession implements SqlSession {
 		try {
 			returnConnection(getConnection());
 		} catch (Exception e) {
-			logger.warn("创建和归还连接失败(更有可能是归还数据库失败)" + e.toString());
+			logger.warn("创建和归还连接失败(更有可能是归还数据库连接失败)" + e.toString());
 		}
 		logger.debug("校验完成,EasyORM可以完成对连接的创建和关闭");
 	}

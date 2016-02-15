@@ -16,6 +16,22 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
 		this.easyormConfig = easyormConfig;
 	}
 
+	/**
+	 * 建立SqlSessionFactory
+	 * 
+	 * @param JDBCDriver
+	 *            jdbc driver
+	 * @param url
+	 *            jdbc url
+	 * @param username
+	 *            <p>
+	 *            连接username <br>
+	 *            sqlite为null
+	 * @param passwd
+	 *            <p>
+	 *            连接密码 <br>
+	 *            sqlite 为null
+	 */
 	public DefaultSqlSessionFactory(String JDBCDriver, String url,
 			String username, String passwd) {
 		logger.debug("仅使用数据库信息配置SqlSessionFactory");
@@ -25,6 +41,12 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
 		this.easyormConfig = easyormConfig;
 	}
 
+	/**
+	 * 使用xml配置文件配置
+	 * 
+	 * @param xmlFileLocation
+	 *            配置文件位置
+	 */
 	public DefaultSqlSessionFactory(String xmlFileLocation) {
 		logger.debug("使用XML配置文件配置SqlSessionFactory");
 		this.easyormConfig = XmlParse.configParse(xmlFileLocation);
