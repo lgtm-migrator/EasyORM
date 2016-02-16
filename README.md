@@ -2,14 +2,13 @@
 * 这是一个基于Java的持久化框架
 * 本框架主要目的用于教学,使读者了解Java高级特性
 * 大量中文注释提供,尽量提供准确的注释
-* 由于本人在架构设计和代码方面的经验不足,所以代码的风格和质量都不怎么样,请谅解
-* 如果使用者对于某一个方法,有更好的解决方式,欢迎联系我
-* 虽然已经足够小心,但难免出现bug,如若发现请联系我
+* 如果对于某段code,有更好的解决方式,欢迎联系我
+* 虽然已经足够小心,但难免出现bug,如若发现,请联系我
 
 ## 简明使用方式
 * 本项目依赖于log4j,使用时需要将log4j(1.2.17以上版本)添加到Referenced Libraries,以及JDBCDriver和EasyORM本身,即,一个可用的基于EasyORM框架的项目至少需要3个库
 * 编写需要映射的实体,实体属性的名字需要和数据库记录的列名一致(不要求大小写)
-* 编写DAO接口,使用@SQL注解定义sql语句,SQL语句中的参数以?代替,**请注意,方法的参数顺序和sql语句中的?符号顺序需要一一对应**,返回类型可以为List,Boolean,Integer,或者是你自己定义的实体类.**请注意不要使用void为方法的返回类型**	
+* 编写DAO接口,使用@SQL注解定义sql语句,SQL语句中的参数以?代替,**请注意,方法的参数顺序和sql语句中的?符号顺序需要一一对应**,返回类型可以为List,Boolean,Integer,或者是你自己定义的实体类.**请注意不要编写返回类型为void的方法**	
 * 编写程序,创建SqlSessionFactory,现在推荐使用`DefaultSqlSessionFactory(String JDBCDriver, String url,
 			String username, String passwd)`构造方法创建factory,xml配置文件的使用文档还在编写过程中
 ***
@@ -97,9 +96,9 @@
 * 泛型
 * JDBC,PreparedStatment
 * Class 类加载器
-* 反射
-* 动态代理
-* xml解析
+* 反射,Reflection
+* 动态代理,Proxy
+* XML解析,DTD,XML Schema
 
 ## 更新日志
 * 2016年2月11日 第一次整合测试完成
@@ -109,10 +108,10 @@
 * 2016年2月12日 整合log4j
 * 2016年2月13日 整合DAO接口扫描
 * 2016年2月14日 添加Apache2 开源协议/缓存代理对象/优化了Executor的执行流程
-* 2016年2月15日 优化Executor执行流程/添加mapper xml
+* 2016年2月15日 优化Executor执行流程/添加mapper dtd
 
 ## LICENSE
 [UNDER THE APACHE LICENSE VERSION 2.0](http://www.apache.org/licenses/LICENSE-2.0 )
 
 ***
-** SunTao UESTC mrls@live.cn **
+**SunTao UESTC mrls@live.cn**
