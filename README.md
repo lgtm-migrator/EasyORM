@@ -32,6 +32,7 @@
 * xml解析的时候,出错需要提示某一些字符需要转义
 
 	`需要确认是否使用XML Schema代替DTD验证`
+	`XS复杂度太高,暂时放弃`
 
 * ~~Executor中,select需要的结果集,需要的parameter应修改为ResultMap,以提高扩展性 -- 2016-2-2~~
 * ~~需要用preparedStatment取代statment,无论从安全,性能,可读性等各方面  -- 2016-2-11~~
@@ -80,14 +81,20 @@
 * 需要确定是否可以让DAO接口直接返回ResultSet
 
 	`需要确定ResultSet是否可以关闭Connection`
+	`ResultSet可以获取Connection并关闭`
 
 * 需要确定是否可以让DefaultSqlSession持有一个Connection
 * ~~需要对代理进行缓存以提高性能,避免每次getMapper(somedaointerface)创建新代理~~
 
 	`对代理预缓存的话,直接通过遍历DAO接口创建代理即可完成`
 
-* 需要确定是否放弃通过XML配置
-* 需要对连接池加上同步锁,以保证线程安全
+* ~~需要确定是否放弃通过XML配置~~
+
+	`现在个人认为1.0版本并不需要XML配置,等到2.0版本重构时可以添加功能,那时候XML才有实用`
+
+* ~~需要对连接池加上同步锁,以保证线程安全~~
+
+	`线程池需要更多测试以保证线程安全`
 
 
 ## 知识储备

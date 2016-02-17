@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
@@ -15,7 +16,7 @@ import com.mysql.jdbc.Driver;
 /**
  * 连接池
  * <p>
- * 暂不可用
+ * 使用线程安全的ConcurrentHashMap作为存储连接的容器
  * 
  * @author suntao
  *
@@ -26,9 +27,10 @@ public class ConnectionPool {
 	private String username;
 	private String passwd;
 	private int poolSize;
+	private Boolean isInit;
 	public static final int DEFAULT_POOL_SIZE = 10;
 
-	private Map<Connection, ConnectionContent> connectionMap;
+	private Map<Connection, Boolean> connectionsMap;
 	/**
 	 * log4j
 	 **/
@@ -42,6 +44,8 @@ public class ConnectionPool {
 		this.username = username;
 		this.passwd = passwd;
 		this.poolSize = DEFAULT_POOL_SIZE;
+		this.isInit = false;
+		this.connectionsMap = new ConcurrentHashMap<Connection, Boolean>();
 		initPool();
 	}
 
@@ -53,83 +57,81 @@ public class ConnectionPool {
 		this.username = username;
 		this.passwd = passwd;
 		this.poolSize = poolSize;
+		this.isInit = false;
+		this.connectionsMap = new ConcurrentHashMap<Connection, Boolean>(
+				poolSize);
 		initPool();
 	}
 
 	private void initPool() {
 		try {
-			connectionMap = new HashMap<Connection, ConnectionPool.ConnectionContent>();
+
 			Class.forName(driver);
 			for (int i = 0; i < poolSize; i++) {
 				Connection currentConn = DriverManager.getConnection(url,
 						username, passwd);
-				connectionMap.put(currentConn, new ConnectionContent(
-						currentConn));
+				logger.debug("连接" + currentConn + "已创建");
+				if (currentConn != null)
+					connectionsMap.put(currentConn, false);
 			}
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		isInit = true;
+		logger.debug("共创建" + connectionsMap.size() + "个连接");
 
 	}
 
+	/**
+	 * 获取该池是否已经初始化
+	 * 
+	 * @return
+	 */
+	public Boolean isInit() {
+		return isInit;
+	}
+
 	public void releasePool() {
-		for (Connection conn : connectionMap.keySet()) {
+		for (Connection conn : connectionsMap.keySet()) {
 			try {
 				conn.close();
+				logger.debug("连接" + conn + "已关闭");
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}
-		connectionMap.clear();
+		connectionsMap.clear();
+		logger.debug("释放完成");
 	}
 
-	public Connection getConnection() {
+	public synchronized Connection getConnection() {
 		Connection result = null;
-		for (ConnectionContent cc : connectionMap.values()) {
-			if (!cc.isUse())
-				result = cc.getConnection();
+		for (Connection conn : connectionsMap.keySet()) {
+			if (!connectionsMap.get(conn)) {
+				connectionsMap.replace(conn, true);
+				result = conn;
+				break;
+			}
 		}
+		if (result != null)
+			logger.debug("连接" + result + "被取出");
+		else
+			logger.warn("连接池没有更多连接,返回null");
 		return result;
 	}
 
-	public Boolean returnConnection(Connection conn) {
+	public synchronized Boolean returnConnection(Connection conn) {
 		Boolean result = false;
 		try {
-			connectionMap.get(conn).returnConntion();
+			connectionsMap.replace(conn, false);
+			logger.debug("连接" + conn + "回到连接池");
+			result = true;
 		} catch (Exception e) {
 			result = false;
 		}
 
 		return result;
-	}
-
-	class ConnectionContent {
-		Connection conn;
-		Boolean isUse;
-
-		public ConnectionContent(Connection conn) {
-			super();
-			this.conn = conn;
-			isUse = false;
-		}
-
-		public Connection getConnection() {
-			return conn;
-		}
-
-		/**
-		 * 正在使用返回true,没有使用返回false
-		 * 
-		 * @return
-		 */
-		public Boolean isUse() {
-			return isUse;
-		}
-
-		public void returnConntion() {
-			this.isUse = false;
-		}
 	}
 }
