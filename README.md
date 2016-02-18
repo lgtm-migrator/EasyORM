@@ -96,6 +96,8 @@
 
 	`线程池需要更多测试以保证线程安全`
 
+* 需要对SimpleExecutor添加几个默认的方法,支持save,update,delete等方法
+
 
 ## 知识储备
 * log4j
@@ -117,6 +119,7 @@
 * 2016年2月13日 整合DAO接口扫描
 * 2016年2月14日 添加Apache2 开源协议/缓存代理对象/优化了Executor的执行流程
 * 2016年2月15日 优化Executor执行流程/添加mapper dtd
+* 2016年2月18日 添加连接池并持续测试可靠性(预计需要一周时间)
 
 ## LICENSE
 [UNDER THE APACHE LICENSE VERSION 2.0](http://www.apache.org/licenses/LICENSE-2.0 )
