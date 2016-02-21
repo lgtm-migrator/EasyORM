@@ -26,9 +26,14 @@ public class fullTest {
 	@Test
 	public void testList() {
 		List<courseinfo> courses = courseinfomapper.selectAll();
-		System.out.println(courseinfomapper.update());
-		for (courseinfo c : courses) {
-			System.out.println(c);
+		courseinfo c = new courseinfo();
+		c.classhour = 15;
+		c.course = "测试课程";
+		c.score = (float) 3.5;
+		c.teacherid = 100034;
+		sqlSession.insert(c);
+		for (courseinfo ci : courses) {
+			System.out.println(ci);
 		}
 	}
 }

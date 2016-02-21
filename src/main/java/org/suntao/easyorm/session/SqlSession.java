@@ -40,4 +40,28 @@ public interface SqlSession {
 	 *            一个数据库连接
 	 */
 	void returnConnection(Connection conn);
+
+	/**
+	 * 根据id更新
+	 * 
+	 * @param obj
+	 * @return
+	 */
+	Integer update(Object obj);
+
+	/**
+	 * 插入一条数据
+	 * 
+	 * @param obj
+	 * @return
+	 */
+	Integer insert(Object obj);
+
+	/**
+	 * 删除一条数据
+	 * 
+	 * @param obj
+	 * @return
+	 */
+	Integer delete(Object obj);
 }

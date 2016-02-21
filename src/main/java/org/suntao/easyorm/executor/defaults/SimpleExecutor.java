@@ -5,6 +5,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import org.apache.log4j.Logger;
 import org.suntao.easyorm.executor.Executor;
@@ -72,7 +73,10 @@ public class SimpleExecutor implements Executor {
 				if (params != null) {
 					for (int index = 1; index <= params.length; index++) {
 						Object currentParam = params[index - 1];
-						if (currentParam instanceof Integer) {
+						if (currentParam == null) {
+							int type = Types.NULL;
+							preparedStatement.setNull(index, type);
+						} else if (currentParam instanceof Integer) {
 							preparedStatement.setInt(index, (int) currentParam);
 						} else if (currentParam instanceof String) {
 							preparedStatement.setString(index,
@@ -80,6 +84,9 @@ public class SimpleExecutor implements Executor {
 						} else if (currentParam instanceof Date) {
 							preparedStatement.setDate(index,
 									(Date) currentParam);
+						} else if (currentParam instanceof Float) {
+							preparedStatement.setFloat(index,
+									(Float) currentParam);
 						} else {
 							logger.error(String.format("传入的参数错误,当前不可接受%s类型的参数",
 									currentParam.getClass().getName()));
