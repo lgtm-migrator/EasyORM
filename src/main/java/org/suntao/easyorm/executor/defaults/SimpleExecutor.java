@@ -100,8 +100,14 @@ public class SimpleExecutor implements Executor {
 				 */
 				resultSet = preparedStatement.getResultSet();
 				influRows = preparedStatement.getUpdateCount();// 获取影响行数
+				boolean isSelect = false;// 是否是Select 流程
+				if (resultSet == null)
+					isSelect = true;
+				else
+					isSelect = false;
+
 				// 如若不是select语句,则无法得到ResultSet
-				if (resultSet == null) {
+				if (isSelect) {
 					logger.debug("UPDATE/INSERT/DELETE流程");
 					ResultMappingType resultMappingType = mapStatment
 							.getResultMap().getResultType();

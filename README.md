@@ -96,7 +96,7 @@
 
 	`线程池需要更多测试以保证线程安全`
 
-* 需要对SimpleExecutor添加几个默认的方法,支持save,update,delete等方法
+* ~~需要对SimpleExecutor添加几个默认的方法,支持save,update,delete等方法~~
 
 
 ## 知识储备
@@ -120,7 +120,7 @@
 * 2016年2月14日 添加Apache2 开源协议/缓存代理对象/优化了Executor的执行流程
 * 2016年2月15日 优化Executor执行流程/添加mapper dtd
 * 2016年2月18日 添加连接池并持续测试可靠性(预计需要一周时间)
-* 2016年2月21日 添加一个默认的insert方法/添加一个DatabaseModel注解,两者配合使用
+* 2016年2月21-24日 为SqlSession添加几个默认方法
 
 ## LICENSE
 [UNDER THE APACHE LICENSE VERSION 2.0](http://www.apache.org/licenses/LICENSE-2.0 )

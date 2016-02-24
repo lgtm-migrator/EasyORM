@@ -42,8 +42,9 @@ public class ConnectionPool {
 	 * 连接池的容量为10 <br>
 	 * <p>
 	 * 当连接池中的连接全部被使用的时候<br>
-	 * 会创建新的连接<br>
-	 * 当不在池内的连接被返回时即被关闭
+	 * 会创建新的连接,但是此连接并不会被加入池中<br>
+	 * 当不在池内的连接被返回时即被关闭<br>
+	 * 如果某一些数据库没有用户密码(例如SQLite),请使用null
 	 * 
 	 * @param driver
 	 *            JDBC Driver
@@ -67,6 +68,21 @@ public class ConnectionPool {
 		initPool();
 	}
 
+	/**
+	 * 创建一个连接池并初始化
+	 * <p>
+	 * 当连接池中的连接全部被使用的时候<br>
+	 * 会创建新的连接,但是此连接并不会被加入池中<br>
+	 * 当不在池内的连接被返回时即被关闭<br>
+	 * 如果某一些数据库没有用户密码(例如SQLite),请使用null
+	 * 
+	 * @param driver
+	 * @param url
+	 * @param username
+	 * @param passwd
+	 * @param poolSize
+	 *            池的大小
+	 */
 	public ConnectionPool(String driver, String url, String username,
 			String passwd, int poolSize) {
 		super();
@@ -82,11 +98,49 @@ public class ConnectionPool {
 	}
 
 	/**
-	 * 初始化线程池
+	 * 从连接池中取一个连接
+	 * <p>
+	 * 请注意请不要关闭此连接<br>
+	 * 使用完之后请使用returnConnection<br>
+	 * 返回此连接到连接池
+	 * 
+	 * @return
+	 */
+	public synchronized Connection getConnection() {
+		Connection result = null;
+		for (Connection conn : connectionsMap.keySet()) {
+			if (!connectionsMap.get(conn)) {
+				connectionsMap.replace(conn, true);
+				result = conn;
+				break;
+			}
+		}
+		if (result != null)
+			logger.debug("连接" + result + "被取出");
+		else {
+			logger.warn("请注意此连接池已经用尽,现在创建了一个新的连接以响应请求");
+			result = getNewConnectionFromJDBC();
+		}
+		return result;
+	}
+
+	private synchronized Connection getNewConnectionFromJDBC() {
+		Connection result = null;
+		try {
+			result = DriverManager.getConnection(url, username, passwd);
+			logger.debug("创建一个新连接" + result);
+		} catch (SQLException e) {
+			logger.debug("创建连接失败");
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	/**
+	 * 初始化数据连接池
 	 */
 	private void initPool() {
 		try {
-
 			Class.forName(driver);
 			for (int i = 0; i < poolSize; i++) {
 				Connection currentConn = getNewConnectionFromJDBC();
@@ -112,6 +166,18 @@ public class ConnectionPool {
 		return isInit;
 	}
 
+	/**
+	 * 获取连接池大小
+	 * 
+	 * @return size
+	 */
+	public int PoolSize() {
+		return poolSize;
+	}
+
+	/**
+	 * 释放连接池
+	 */
 	public void releasePool() {
 		for (Connection conn : connectionsMap.keySet()) {
 			try {
@@ -126,53 +192,15 @@ public class ConnectionPool {
 	}
 
 	/**
-	 * 获取连接池大小
-	 * 
-	 * @return size
-	 */
-	public int PoolSize() {
-		return poolSize;
-	}
-
-	private synchronized Connection getNewConnectionFromJDBC() {
-		Connection result = null;
-		try {
-			result = DriverManager.getConnection(url, username, passwd);
-			logger.debug("创建一个新连接" + result);
-		} catch (SQLException e) {
-			logger.debug("创建连接失败");
-			e.printStackTrace();
-		}
-		return result;
-	}
-
-	public synchronized Connection getConnection() {
-		Connection result = null;
-		for (Connection conn : connectionsMap.keySet()) {
-			if (!connectionsMap.get(conn)) {
-				connectionsMap.replace(conn, true);
-				result = conn;
-				break;
-			}
-		}
-		if (result != null)
-			logger.debug("连接" + result + "被取出");
-		else {
-			result = getNewConnectionFromJDBC();
-		}
-		return result;
-	}
-
-	/**
 	 * 返回连接
 	 * <p>
 	 * 向池内返回一个连接<br>
-	 * 请注意返回连接之后就再也不要使用此连接了<br>
+	 * 注意返回连接之后就,请不要再使用此连接<br>
 	 * 如果返回了一个不在池内的连接<br>
 	 * 该连接将直接被关闭
 	 * <p>
 	 * 同步的方法<br>
-	 * 同一时间只有一个现成能访问
+	 * 同一时间只有一个线程能访问
 	 * 
 	 * @param conn
 	 *            数据库连接

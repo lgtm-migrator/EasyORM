@@ -33,12 +33,29 @@ public class MapStatment {
 	public MapStatment() {
 		super();
 		this.paramLocation = new HashMap<String, Integer>();
+		this.id = "";
+		this.statmentSQL = "";
+		this.resultMap = new ResultMapConfig();
 	}
 
 	public MapStatment(String id, String statmentSQL) {
 		this();
 		this.id = id;
 		this.statmentSQL = statmentSQL;
+	}
+	
+	
+	public void setReturnType(ResultMappingType type){
+		if(this.resultMap!=null){
+			this.resultMap=new ResultMapConfig();
+		}
+		this.resultMap.setResultType(type);
+	}
+
+	public void setReturnTypeInteger() {
+		ResultMapConfig<?> config = new ResultMapConfig(null, null, null,
+				ResultMappingType.INTEGER);
+		this.resultMap = config;
 	}
 
 	public String getId() {

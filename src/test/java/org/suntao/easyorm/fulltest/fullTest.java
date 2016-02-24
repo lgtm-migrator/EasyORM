@@ -25,15 +25,18 @@ public class fullTest {
 
 	@Test
 	public void testList() {
-		List<courseinfo> courses = courseinfomapper.selectAll();
+		List<courseinfo> courses = sqlSession.selectALL(courseinfo.class);
+		sqlSession.selectALL(courseinfo.class);
 		courseinfo c = new courseinfo();
-		c.classhour = 15;
-		c.course = "测试课程";
-		c.score = (float) 3.5;
-		c.teacherid = 100034;
-		sqlSession.insert(c);
+		c.courseid = 17;
+		c.classhour = 64;
+		c.course = "测试名称修改4";
+		c.score = (float) 3.75;
+		c.teacherid = 100096;
+		System.out.println(sqlSession.updateByPrimaryKey(c));
 		for (courseinfo ci : courses) {
 			System.out.println(ci);
 		}
+		System.out.println("ID 17 信息为:" + sqlSession.selectByPrimaryKey(c));
 	}
 }
