@@ -16,6 +16,13 @@ public class EasyormConfig {
 	 * DAO接口文件包位置
 	 */
 	private String daoPath;
+
+	public EasyormConfig(String daoPath, DatabaseConfig databaseConfig) {
+		super();
+		this.daoPath = daoPath;
+		this.databaseConfig = databaseConfig;
+	}
+
 	/**
 	 * 数据库配置
 	 */

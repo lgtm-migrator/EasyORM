@@ -2,8 +2,7 @@
 * 这是一个基于Java的持久化框架
 * 本框架主要目的用于教学,使读者了解Java高级特性
 * 大量中文注释提供,尽量提供准确的注释
-* 如果对于某段code,有更好的解决方式,欢迎联系我
-* 虽然已经足够小心,但难免出现bug,如若发现,请联系我
+* 如果有相关的改进建议,或者发现了Bug,请联系我
 
 ## 简明使用方式
 * 本项目依赖于log4j,使用时需要将log4j(1.2.17以上版本)添加到Referenced Libraries,以及JDBCDriver和EasyORM本身,即,一个可用的基于EasyORM框架的项目至少需要3个库
@@ -22,31 +21,32 @@
 ## 思路简记
 * 如果不使用连接池,SqlSession中并不建立连接,只有调用getConnection()时才建立连接,如果使用连接池,getConnection从连接池中取连接
 * 代理调用Executor 
-* SimpleExecutor中调用相应的反射方法,完成从行到实体的映射
-* 将mapstatment传入executor,然后executor通过preparedstatment执行sql语句
+* DefaultExecutor中调用相应的反射方法,完成从行到实体的映射
+* 将mapstatement传入executor,然后executor通过preparedstatment执行sql语句
 * 在创建SqlSession时,扫描xml,注解,以及接口方法的返回类型,存储为相应配置实体.
 * 在openSession()后,扫描一次接口和xml配置文件
-* 当调用DAO接口中的方法,而SqlSession中找不到对应的MapStatment时,会调用Scanner扫描该方法并存储到MapStatment
+* 当调用DAO接口中的方法,而SqlSession中找不到对应的MapStatement时,会调用Scanner扫描该方法并存储到MapStatment
 
 ## TO DO
 * xml解析的时候,出错需要提示某一些字符需要转义
 
 	`需要确认是否使用XML Schema代替DTD验证`
 	`XS复杂度太高,暂时放弃`
-
+    `暂时放弃XML解析`
+    
 * ~~Executor中,select需要的结果集,需要的parameter应修改为ResultMap,以提高扩展性 -- 2016-2-2~~
-* ~~需要用preparedStatment取代statment,无论从安全,性能,可读性等各方面  -- 2016-2-11~~
+* ~~需要用preparedStatement取代statement,无论从安全,性能,可读性等各方面  -- 2016-2-11~~
 * ~~需要修改EasyormConfig(以及xml dtd) 需要用户指定实体所在的包~~
-* ~~需要修改executor接口的parameter,使用mapstatment替换sqlStr,以提高扩展性~~
+* ~~需要修改executor接口的parameter,使用mapstatement替换sqlStr,以提高扩展性~~
 * ~~需要确定executor与proxy之间是如何调用的 --2016-2-6~~
 
 	`代理调用解释器,解释器调用结果映射器`
 
-* 需要设计一个功能,将相应的mapstatment,转化成可用的sql语句或者preparedstatment可用的形式
+* 需要设计一个功能,将相应的mapstatement,转化成可用的sql语句或者preparedstatment可用的形式
 
-	`在使用preparedStatment时这个功能价值并不大,可是也方便用于调试`
+	`在使用preparedStatement时这个功能价值并不大,可是也方便用于调试`
 
-* SqlSession中应该集成一个数据库连接池化功能,否则建立连接速度太慢了
+* SqlSession中应该集成一个数据库连接池化功能,因为建立连接的所消耗资源较大
 * ~~需要给SqlSessionBuilder创建一个以配置实体构建的构造方法.~~
 * ~~需要对JDBC返回的结果进行处理,通过配置文件和反射确定,是返回何种类型的结果~~
 * ~~需要确定怎样判定返回单独实体还是列表 --2016-2-6~~
@@ -83,7 +83,10 @@
 	`需要确定ResultSet是否可以关闭Connection`
 	`ResultSet可以获取Connection并关闭`
 
-* 需要确定是否可以让DefaultSqlSession持有一个Connection
+* ~~需要确定是否可以让DefaultSqlSession持有一个Connection~~
+
+    `决定让连接池来完成此功能`
+    
 * ~~需要对代理进行缓存以提高性能,避免每次getMapper(somedaointerface)创建新代理~~
 
 	`对代理预缓存的话,直接通过遍历DAO接口创建代理即可完成`
@@ -94,9 +97,13 @@
 
 * ~~需要对连接池加上同步锁,以保证线程安全~~
 
-	`线程池需要更多测试以保证线程安全`
+	`连接池需要更多测试,以保证连接不丢失/不被意外关闭`
 
-* ~~需要对SimpleExecutor添加几个默认的方法,支持save,update,delete等方法~~
+* ~~需要对DefaultExecutor添加几个默认的方法,支持save,update,delete等方法~~
+
+* 需要确认是否可以用AOP,取代log4j进行调试
+* 准备剥离关于XML文件的处理部分
+* 需要删除不必要的代码部分,以提升可读性
 
 
 ## 知识储备
@@ -104,7 +111,7 @@
 * Exception
 * 注解
 * 泛型
-* JDBC,PreparedStatment
+* JDBC,PreparedStatement
 * Class 类加载器
 * 反射,Reflection
 * 动态代理,Proxy
@@ -112,15 +119,13 @@
 
 ## 更新日志
 * 2016年2月11日 第一次整合测试完成
-
-	`从配置到完成查询功能基本完成,唯一的不足是,不能通过定义DAO的package进行扫描`
-	
 * 2016年2月12日 整合log4j
 * 2016年2月13日 整合DAO接口扫描
 * 2016年2月14日 添加Apache2 开源协议/缓存代理对象/优化了Executor的执行流程
 * 2016年2月15日 优化Executor执行流程/添加mapper dtd
 * 2016年2月18日 添加连接池并持续测试可靠性(预计需要一周时间)
 * 2016年2月21-24日 为SqlSession添加几个默认方法
+* 2016年2月25日 各种更名
 
 ## LICENSE
 [UNDER THE APACHE LICENSE VERSION 2.0](http://www.apache.org/licenses/LICENSE-2.0 )

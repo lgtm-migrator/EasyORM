@@ -13,15 +13,15 @@ import javax.net.ssl.SSLEngineResult.Status;
 import org.apache.log4j.Logger;
 import org.suntao.easyorm.annotation.DataBaseModel;
 import org.suntao.easyorm.executor.Executor;
-import org.suntao.easyorm.executor.defaults.SimpleExecutor;
-import org.suntao.easyorm.map.MapStatment;
+import org.suntao.easyorm.executor.defaults.DefaultExecutor;
+import org.suntao.easyorm.map.MapStatement;
 import org.suntao.easyorm.map.ResultMapConfig;
 import org.suntao.easyorm.map.ResultMapping;
 import org.suntao.easyorm.map.ResultMappingType;
-import org.suntao.easyorm.map.defaults.SimpleResultMapping;
+import org.suntao.easyorm.map.defaults.DefaultResultMapping;
 import org.suntao.easyorm.proxy.MapperProxyBuilder;
 import org.suntao.easyorm.scan.Scanner;
-import org.suntao.easyorm.scan.SimpleScanner;
+import org.suntao.easyorm.scan.defaults.DefaultScanner;
 import org.suntao.easyorm.session.SqlSession;
 import org.suntao.easyorm.xmlparse.DatabaseConfig;
 import org.suntao.easyorm.xmlparse.EasyormConfig;
@@ -42,9 +42,9 @@ public class DefaultSqlSession implements SqlSession {
 	 */
 	private EasyormConfig easyormConfig;
 	/**
-	 * MapStatment缓存
+	 * MapStatement缓存
 	 */
-	private Map<String, MapStatment> mapStatmentCache;
+	private Map<String, MapStatement> mapStatementCache;
 	/**
 	 * 反射配置扫描器
 	 */
@@ -65,7 +65,7 @@ public class DefaultSqlSession implements SqlSession {
 	/**
 	 * 创建一个SqlSession
 	 * <p>
-	 * 将会初始化MapStatment缓存<br>
+	 * 将会初始化MapStatement缓存<br>
 	 * 请务必确认有数据库配置
 	 * 
 	 * @param easyormConfig
@@ -73,12 +73,12 @@ public class DefaultSqlSession implements SqlSession {
 	public DefaultSqlSession(EasyormConfig easyormConfig) {
 		this.easyormConfig = easyormConfig;
 		this.databaseConfig = easyormConfig.getDatabaseConfig();
-		this.resultMapping = new SimpleResultMapping();
-		this.executor = new SimpleExecutor(this, this.resultMapping);
+		this.resultMapping = new DefaultResultMapping();
+		this.executor = new DefaultExecutor(this, this.resultMapping);
 		if (scanner == null)
-			scanner = new SimpleScanner(easyormConfig);
+			scanner = new DefaultScanner(easyormConfig);
 		scanner.scan();
-		this.mapStatmentCache = scanner.getScannedMapStatment();
+		this.mapStatementCache = scanner.getScannedMapStatement();
 		check();
 	}
 
@@ -117,7 +117,11 @@ public class DefaultSqlSession implements SqlSession {
 				&& obj.getClass().getAnnotation(DataBaseModel.class) != null)
 			result = true;
 		else {
-			logger.warn("执行默认方法的条件检验失败,请确认传入对象不为null且对象的类有DatabaseModel注解");
+			if (obj == null)
+				logger.warn("执行默认方法的条件检验失败,因为传入的对象是null");
+			else {
+				logger.warn("没有DatabaseModel注解");
+			}
 		}
 		return result;
 	}
@@ -130,7 +134,7 @@ public class DefaultSqlSession implements SqlSession {
 			Class<?> objClass = obj.getClass();
 			dataBaseModel = objClass.getAnnotation(DataBaseModel.class);
 			String tableName = dataBaseModel.tablename();
-			String primaryKey = dataBaseModel.primarykey();
+			String primaryKey = dataBaseModel.primarykeyname();
 			String objClassName = objClass.getName();
 			String key = objClassName + ".delete";
 			Object[] param = null;
@@ -148,17 +152,17 @@ public class DefaultSqlSession implements SqlSession {
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			}
-			MapStatment mapStatment = mapStatmentCache.get(key);
-			if (mapStatment != null) {
-				executor.execute(mapStatment, param);
+			MapStatement mapStatement = mapStatementCache.get(key);
+			if (mapStatement != null) {
+				executor.execute(mapStatement, param);
 			} else {
 				String sqlStr = String.format("delete from %s where %s = ?",
 						tableName, primaryKey);
-				MapStatment willBeCachedMapStatment = new MapStatment(key,
+				MapStatement willBeCachedMapStatement = new MapStatement(key,
 						sqlStr);
-				willBeCachedMapStatment.setReturnTypeInteger();
-				mapStatmentCache.put(key, willBeCachedMapStatment);
-				executor.execute(willBeCachedMapStatment, param);
+				willBeCachedMapStatement.setReturnTypeInteger();
+				mapStatementCache.put(key, willBeCachedMapStatement);
+				executor.execute(willBeCachedMapStatement, param);
 			}
 		} else {
 			logger.error("执行本方法失败,参数为空或者没有DatabaseModel注解");
@@ -196,7 +200,7 @@ public class DefaultSqlSession implements SqlSession {
 		logger.debug(String.format("尝试获取%s的代理", mapperClass));
 		T result = null;
 		result = (T) MapperProxyBuilder.getMapperProxy(mapperClass,
-				this.executor, mapStatmentCache);
+				this.executor, mapStatementCache);
 		if (result != null) {
 			logger.debug("代理获取成功");
 		}
@@ -220,14 +224,14 @@ public class DefaultSqlSession implements SqlSession {
 		 * 数据库实体注解
 		 */
 		DataBaseModel annoConfig = null;
-		// 如果传入引用不为null
-		if (obj != null) {
+		// 检验对象是否为空,是否有DatabaseModel注解
+		if (defaultSqlMethodParamCheck(obj)) {
 			// 对象类名
 			String objClassName = obj.getClass().getName();
 			// 查询key
 			String key = objClassName + ".insert";
-			// 查询是否有相应MapStatment
-			MapStatment mapStatment = mapStatmentCache.get(key);
+			// 查询是否有相应MapStatement
+			MapStatement mapStatement = mapStatementCache.get(key);
 			// 对象所有域
 			Field[] fields = obj.getClass().getDeclaredFields();
 			// Executor使用的参数
@@ -239,66 +243,60 @@ public class DefaultSqlSession implements SqlSession {
 			Boolean autoincrease = null;
 			// 实体对应的表名
 			String tablename = null;
-			// 如果注解存在
-			if (annoConfig != null) {
-				primarykeyname = annoConfig.primarykey();
-				autoincrease = annoConfig.autoincrease();
-				tablename = annoConfig.tablename();
-				// 遍历所有域,填充参数
-				for (int i = 0; i < fields.length; i++) {
-					Field currentField = fields[i];
-					try {
-						currentField.setAccessible(true);
-						if (autoincrease
-								&& currentField.getName()
-										.equals(primarykeyname))// 如若当前域的名字和主键名相同,并且主键自增的话,传入null
-							params[i] = null;
-						else {
-							params[i] = currentField.get(obj);
-						}
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
+			primarykeyname = annoConfig.primarykeyname();
+			autoincrease = annoConfig.autoincrease();
+			tablename = annoConfig.tablename();
+			// 遍历所有域,填充参数
+			for (int i = 0; i < fields.length; i++) {
+				Field currentField = fields[i];
+				try {
+					currentField.setAccessible(true);
+					if (autoincrease
+							&& currentField.getName().equals(primarykeyname))// 如若当前域的名字和主键名相同,并且主键自增的话,传入null
+						params[i] = null;
+					else {
+						params[i] = currentField.get(obj);
 					}
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
 				}
-				if (mapStatment == null) {
-					// 创建MapStatment后执行
-					if (annoConfig != null) {
-						MapStatment willBeCachedMapStatment = new MapStatment();
-						willBeCachedMapStatment.setId(key);
-						// 生成Sql
-						String sql = "insert into " + tablename;
-						sql += " ( ";
-						for (int i = 0; i < fields.length; i++) {
-							if (i > 0)
-								sql += ",";
-							sql += fields[i].getName();
-						}
-						sql += " ) values ( ";
-						for (int i = 0; i < fields.length; i++) {
-							if (i > 0)
-								sql += ",";
-							sql += "?";
-						}
-						sql += " ) ";
-						// 将SQL装入MapStatment中
-						willBeCachedMapStatment.setStatmentSQL(sql);
-						willBeCachedMapStatment
-								.setReturnType(ResultMappingType.INTEGER);
-						logger.debug("默认方法产生Sql语句为:" + sql);
-						// 缓存
-						mapStatmentCache.put(willBeCachedMapStatment.getId(),
-								willBeCachedMapStatment);
-						mapStatment = willBeCachedMapStatment;
-					}
-				}
-				result = (int) executor.execute(mapStatment, params);
-			} else {
-				logger.error("使用默认方法需要对实体进行DatabaseModel注解");
 			}
+			if (mapStatement == null) {
+				// 创建MapStatement后执行
+				if (annoConfig != null) {
+					MapStatement willBeCachedMapStatement = new MapStatement();
+					willBeCachedMapStatement.setId(key);
+					// 生成Sql
+					String sql = "insert into " + tablename;
+					sql += " ( ";
+					for (int i = 0; i < fields.length; i++) {
+						if (i > 0)
+							sql += ",";
+						sql += fields[i].getName();
+					}
+					sql += " ) values ( ";
+					for (int i = 0; i < fields.length; i++) {
+						if (i > 0)
+							sql += ",";
+						sql += "?";
+					}
+					sql += " ) ";
+					// 将SQL装入MapStatement中
+					willBeCachedMapStatement.setStatementSQL(sql);
+					willBeCachedMapStatement
+							.setReturnType(ResultMappingType.INTEGER);
+					logger.debug("默认方法产生Sql语句为:" + sql);
+					// 缓存
+					mapStatementCache.put(willBeCachedMapStatement.getId(),
+							willBeCachedMapStatement);
+					mapStatement = willBeCachedMapStatement;
+				}
+			}
+			result = (int) executor.execute(mapStatement, params);
 		} else {
-			logger.warn("请检查为何传入了null引用");
+			logger.warn("请检查是否传入了null引用,请确认实体拥有DatabaseModel注解");
 		}
 		return result;
 	}
@@ -326,19 +324,19 @@ public class DefaultSqlSession implements SqlSession {
 					.getAnnotation(DataBaseModel.class);
 			String tableName = dataBaseModel.tablename();
 			String key = modelClass.getName() + ".selectAll";
-			MapStatment mapStatment = mapStatmentCache.get(key);
-			if (mapStatment == null) {
-				logger.debug("缓存中不存在" + key + "的MapStatment,动态生成并缓存");
+			MapStatement mapStatement = mapStatementCache.get(key);
+			if (mapStatement == null) {
+				logger.debug("缓存中不存在" + key + "的MapStatement,动态生成并缓存");
 				String sqlStr = "select * from " + tableName;
-				MapStatment willBeCachedMapStatment = new MapStatment();
-				willBeCachedMapStatment.setStatmentSQL(sqlStr);
+				MapStatement willBeCachedMapStatement = new MapStatement();
+				willBeCachedMapStatement.setStatementSQL(sqlStr);
 				ResultMapConfig<T> config = new ResultMapConfig<T>(modelClass,
 						null, key, ResultMappingType.MODELLIST);
-				willBeCachedMapStatment.setResultMap(config);
-				mapStatmentCache.put(key, willBeCachedMapStatment);
-				mapStatment = willBeCachedMapStatment;
+				willBeCachedMapStatement.setResultMap(config);
+				mapStatementCache.put(key, willBeCachedMapStatement);
+				mapStatement = willBeCachedMapStatement;
 			}
-			result = (List<T>) executor.execute(mapStatment, null);
+			result = (List<T>) executor.execute(mapStatement, null);
 		} else {
 			logger.error("请确认传入的参数不为null,并且有DatabaseModel注解");
 		}
@@ -354,10 +352,10 @@ public class DefaultSqlSession implements SqlSession {
 			Class<T> objClass = (Class<T>) obj.getClass();
 			dataBaseModel = objClass.getAnnotation(DataBaseModel.class);
 			String tableName = dataBaseModel.tablename();
-			String primaryKeyName = dataBaseModel.primarykey();
+			String primaryKeyName = dataBaseModel.primarykeyname();
 			String objClassName = objClass.getName();
 			String key = objClassName + ".selectByPrimaryKey";
-			MapStatment mapStatment = mapStatmentCache.get(key);
+			MapStatement mapStatement = mapStatementCache.get(key);
 			Object[] params = new Object[1];
 			try {
 				Field primaryKeyField = obj.getClass().getDeclaredField(
@@ -368,21 +366,21 @@ public class DefaultSqlSession implements SqlSession {
 					| IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
 			}
-			if (mapStatment == null) {
+			if (mapStatement == null) {
 				String sqlStr = "select * from " + tableName + " where "
 						+ primaryKeyName + "=?";
-				MapStatment willBeCachedMapStatment = new MapStatment();
-				willBeCachedMapStatment
+				MapStatement willBeCachedMapStatement = new MapStatement();
+				willBeCachedMapStatement
 						.setReturnType(ResultMappingType.ONEMODEL);
 				ResultMapConfig<T> config = new ResultMapConfig<T>(objClass,
 						null, key, ResultMappingType.ONEMODEL);
-				willBeCachedMapStatment.setResultMap(config);
-				willBeCachedMapStatment.setStatmentSQL(sqlStr);
-				willBeCachedMapStatment.setId(key);
-				mapStatmentCache.put(key, willBeCachedMapStatment);
-				mapStatment = willBeCachedMapStatment;
+				willBeCachedMapStatement.setResultMap(config);
+				willBeCachedMapStatement.setStatementSQL(sqlStr);
+				willBeCachedMapStatement.setId(key);
+				mapStatementCache.put(key, willBeCachedMapStatement);
+				mapStatement = willBeCachedMapStatement;
 			}
-			result = (T) executor.execute(mapStatment, params);
+			result = (T) executor.execute(mapStatement, params);
 		} else {
 			logger.error("执行本方法失败,参数为空或者没有DatabaseModel注解");
 		}
@@ -397,11 +395,11 @@ public class DefaultSqlSession implements SqlSession {
 			Class<?> objClass = obj.getClass();
 			dataBaseModel = objClass.getAnnotation(DataBaseModel.class);
 			String tableName = dataBaseModel.tablename();
-			String primaryKeyName = dataBaseModel.primarykey();
+			String primaryKeyName = dataBaseModel.primarykeyname();
 			String objClassName = objClass.getName();
 			String key = objClassName + ".updateByPrimaryKey";
 			String sqlStr = "update " + tableName + " set ";
-			MapStatment mapStatment = mapStatmentCache.get(key);
+			MapStatement mapStatement = mapStatementCache.get(key);
 			Object[] params = null;
 			Field[] fields = obj.getClass().getDeclaredFields();
 			params = new Object[fields.length];
@@ -426,16 +424,16 @@ public class DefaultSqlSession implements SqlSession {
 				e.printStackTrace();
 			}
 			sqlStr += " where " + primaryKeyName + "=?";
-			if (mapStatment == null) {
-				MapStatment willBeCachedMapStatment = new MapStatment();
-				willBeCachedMapStatment
+			if (mapStatement == null) {
+				MapStatement willBeCachedMapStatement = new MapStatement();
+				willBeCachedMapStatement
 						.setReturnType(ResultMappingType.INTEGER);
-				willBeCachedMapStatment.setStatmentSQL(sqlStr);
-				willBeCachedMapStatment.setId(key);
-				mapStatmentCache.put(key, willBeCachedMapStatment);
-				mapStatment = willBeCachedMapStatment;
+				willBeCachedMapStatement.setStatementSQL(sqlStr);
+				willBeCachedMapStatement.setId(key);
+				mapStatementCache.put(key, willBeCachedMapStatement);
+				mapStatement = willBeCachedMapStatement;
 			}
-			result = (int) executor.execute(mapStatment, params);
+			result = (int) executor.execute(mapStatement, params);
 			logger.debug("执行语句" + sqlStr);
 
 		} else {

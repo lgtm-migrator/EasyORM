@@ -40,11 +40,21 @@ public interface ResultMapping {
 	public <T> List<T> getList(ResultMapConfig<T> resultMap, ResultSet resultSet);
 
 	/**
-	 * 将查询结果映射为相应实体
+	 * 单个实体映射
+	 * <p>
+	 * 通过resultMap中的class对象,动态构造实体<br>
+	 * 并通过反射,遍历实体的fields和相应type,从resultSet获取数据并填充
+	 * <p>
+	 * 需要注意的是,field中的name需要与column相对应(不区分大小写)
+	 * <p>
+	 * 此方法只对resultSet当前行操作
 	 * 
-	 * @param resultMap
+	 * 
+	 * @param objectClass
+	 *            需要返回的对象Class
 	 * @param resultSet
-	 * @return
+	 *            查询的结果集
+	 * @return 对应实体
 	 */
 	public <T> T getModel(ResultMapConfig<T> resultMap, ResultSet resultSet);
 

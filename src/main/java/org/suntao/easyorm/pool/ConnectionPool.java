@@ -3,15 +3,10 @@ package org.suntao.easyorm.pool;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
-
-import com.mysql.jdbc.Driver;
 
 /**
  * 连接池

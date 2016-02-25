@@ -8,7 +8,8 @@ import java.lang.annotation.Target;
 /**
  * 数据库实体注解
  * <p>
- * 使用这一个注解主要是方便执行默认的insert/update/delete等方法
+ * 使用这一个注解<br>
+ * 主要是用于执行SqlSession默认的Sql方法
  * 
  * @author suntao
  *
@@ -19,8 +20,7 @@ public @interface DataBaseModel {
 	/**
 	 * Table名
 	 * <p>
-	 * 该实体对应的table名<br>
-	 * 在Insert/delete/update中会使用到
+	 * 该实体对应的table名
 	 * 
 	 * @return
 	 */
@@ -30,13 +30,14 @@ public @interface DataBaseModel {
 	 * 主键
 	 * <p>
 	 * 数据库主键,唯一 <br>
-	 * update/delete用到的key
+	 * update/delete用到的key<br>
+	 * insert时也会根据自增情况确认是否填充该字段
 	 * <p>
 	 * 填入此实体中一个域的名称
 	 * 
 	 * @return
 	 */
-	public String primarykey();
+	public String primarykeyname();
 
 	/**
 	 * 主键是否自增

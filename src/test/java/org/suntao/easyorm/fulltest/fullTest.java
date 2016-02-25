@@ -38,5 +38,7 @@ public class fullTest {
 			System.out.println(ci);
 		}
 		System.out.println("ID 17 信息为:" + sqlSession.selectByPrimaryKey(c));
+		
+		
 	}
 }

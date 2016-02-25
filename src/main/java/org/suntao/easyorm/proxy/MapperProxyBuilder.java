@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.suntao.easyorm.executor.Executor;
-import org.suntao.easyorm.map.MapStatment;
+import org.suntao.easyorm.map.MapStatement;
 import org.suntao.easyorm.session.SqlSession;
 
 public class MapperProxyBuilder {
@@ -32,7 +32,7 @@ public class MapperProxyBuilder {
 	 * @return 代理对象
 	 */
 	public static <T> Object getMapperProxy(Class<T> mapperClass,
-			Executor executor, Map<String, MapStatment> mapStatments) {
+			Executor executor, Map<String, MapStatement> mapStatments) {
 		Object result = null;
 		Object cachedProxy = cache.get(mapperClass.getName());
 		if (cachedProxy == null) {

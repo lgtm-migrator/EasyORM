@@ -2,7 +2,7 @@ package org.suntao.easyorm.scan;
 
 import java.util.Map;
 
-import org.suntao.easyorm.map.MapStatment;
+import org.suntao.easyorm.map.MapStatement;
 import org.suntao.easyorm.map.ResultMapConfig;
 
 /**
@@ -28,7 +28,7 @@ public interface Scanner {
 	 * 
 	 * @return
 	 */
-	Map<String, MapStatment> getScannedMapStatment();
+	Map<String, MapStatement> getScannedMapStatement();
 
 	/**
 	 * 完成整个扫描并将信息存储在实体中

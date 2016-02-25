@@ -1,6 +1,6 @@
 package org.suntao.easyorm.executor;
 
-import org.suntao.easyorm.map.MapStatment;
+import org.suntao.easyorm.map.MapStatement;
 
 public interface Executor {
 
@@ -15,5 +15,5 @@ public interface Executor {
 	 *         <p>
 	 *         此处结果应该是映射后的结果
 	 */
-	Object execute(MapStatment mapStatment, Object[] params);
+	Object execute(MapStatement mapStatment, Object[] params);
 }

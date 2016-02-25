@@ -44,10 +44,11 @@ public interface SqlSession {
 	void returnConnection(Connection conn);
 
 	/**
-	 * 根据id更新
+	 * 根据id更新数据
 	 * 
 	 * @param obj
-	 * @return
+	 *            实体
+	 * @return 影响条数
 	 */
 	Integer updateByPrimaryKey(Object obj);
 
@@ -71,7 +72,8 @@ public interface SqlSession {
 	 * 主要流程执行失败将返回-1
 	 * 
 	 * @param obj
-	 * @return
+	 * @return 影响条数<br>
+	 *         正常执行流程的结果>=0
 	 */
 	Integer deleteByPrimaryKey(Object obj);
 
@@ -81,7 +83,8 @@ public interface SqlSession {
 	 * 主键唯一
 	 * 
 	 * @param obj
-	 *            对象,应该包含一个id
+	 *            对象<br>
+	 *            该对象主键字段应该被填充
 	 * @return 对象所对应的实体
 	 */
 	<T> T selectByPrimaryKey(T obj);

@@ -19,7 +19,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
-import org.suntao.easyorm.map.MapStatment;
+import org.suntao.easyorm.map.MapStatement;
 import org.suntao.easyorm.map.ResultMapConfig;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -100,8 +100,8 @@ public class XmlParse {
 	 * @param xml
 	 * @return
 	 */
-	public static Map<String, MapStatment> mapStatmentsParse(File xml) {
-		Map<String, MapStatment> result = new HashMap<String, MapStatment>();
+	public static Map<String, MapStatement> mapStatmentsParse(File xml) {
+		Map<String, MapStatement> result = new HashMap<String, MapStatement>();
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setValidating(true);// 设定验证dtd
 		factory.setIgnoringElementContentWhitespace(true);
@@ -118,9 +118,9 @@ public class XmlParse {
 				String currentMethodName = currentMethod.getAttribute("name");
 				String sqlStr = currentMethod.getChildNodes().item(0)
 						.getTextContent();
-				MapStatment currentMapStatment = new MapStatment();
+				MapStatement currentMapStatment = new MapStatement();
 				currentMapStatment.setId(daoclass + "." + currentMethodName);
-				currentMapStatment.setStatmentSQL(sqlStr);
+				currentMapStatment.setStatementSQL(sqlStr);
 				result.put(currentMapStatment.getId(), currentMapStatment);
 			}
 
@@ -222,8 +222,8 @@ public class XmlParse {
 	 * @param doc
 	 * @return
 	 */
-	public static Map<String, MapStatment> parseMapStatment(Document doc) {
-		Map<String, MapStatment> result = new HashMap<String, MapStatment>();
+	public static Map<String, MapStatement> parseMapStatment(Document doc) {
+		Map<String, MapStatement> result = new HashMap<String, MapStatement>();
 		// TO DO
 		return result;
 	}

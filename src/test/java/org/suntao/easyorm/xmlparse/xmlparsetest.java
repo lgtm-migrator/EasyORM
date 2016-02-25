@@ -11,7 +11,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.suntao.easyorm.map.MapStatment;
+import org.suntao.easyorm.map.MapStatement;
 import org.w3c.dom.Document;
 
 /**
@@ -70,7 +70,7 @@ public class xmlparsetest {
 	@Test
 	public void testMapperXmlParse() {
 		System.out.println("------------dao sql config--------------");
-		Map<String, MapStatment> statments = XmlParse
+		Map<String, MapStatement> statments = XmlParse
 				.mapStatmentsParse(new File(
 						"src/test/java/org/suntao/easyorm/testMapper/courseInfoMapper.xml"));
 
