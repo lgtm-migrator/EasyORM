@@ -22,9 +22,9 @@ public class MapperProxy implements InvocationHandler {
 	 */
 	private Executor executor;
 	/**
-	 * 
+	 * MapStatement缓存
 	 */
-	private Map<String, MapStatement> mapStatments;
+	private Map<String, MapStatement> mapStatementsCache;
 
 	private Class<?> interfaceClass;
 	/**
@@ -33,9 +33,9 @@ public class MapperProxy implements InvocationHandler {
 	private static Logger logger = Logger.getLogger(MapperProxy.class);
 
 	public MapperProxy(Executor executor,
-			Map<String, MapStatement> mapStatments, Class<?> daoInterface) {
+			Map<String, MapStatement> mapStatementsCache, Class<?> daoInterface) {
 		this.executor = executor;
-		this.mapStatments = mapStatments;
+		this.mapStatementsCache = mapStatementsCache;
 		this.interfaceClass = daoInterface;
 	}
 
@@ -46,19 +46,19 @@ public class MapperProxy implements InvocationHandler {
 		String classnameOfMethod = interfaceClass.getName();
 		String nameOfMethod = method.getName();
 		String key = String.format("%s.%s", classnameOfMethod, nameOfMethod);
-		MapStatement mapStatment = mapStatments.get(key);
-		if (mapStatment == null) {
+		MapStatement mapStatement = mapStatementsCache.get(key);
+		if (mapStatement == null) {
 			logger.warn(String.format("没有查询到%s的MapStatment,动态生成", key));
 			DefaultScanner scanner = new DefaultScanner();
 			ResultMapConfig<?> resultMapConfig = scanner
 					.scanResultMapConfigOfMethod(method);
-			mapStatment = scanner.scanMapStatmentOfMethod(method);
-			mapStatment.setResultMap(resultMapConfig);
-			mapStatment.setId(key);
-			mapStatments.put(key, mapStatment);
+			mapStatement = scanner.scanMapStatmentOfMethod(method);
+			mapStatement.setResultMap(resultMapConfig);
+			mapStatement.setId(key);
+			mapStatementsCache.put(key, mapStatement);
 
 		}
-		result = executor.execute(mapStatment, args);
+		result = executor.execute(mapStatement, args);
 		return result;
 	}
 

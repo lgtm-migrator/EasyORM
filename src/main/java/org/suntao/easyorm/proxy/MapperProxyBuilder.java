@@ -20,7 +20,7 @@ public class MapperProxyBuilder {
 	 * key为dao接口类Name <br>
 	 * value为代理
 	 */
-	private static Map<String, Object> cache = new HashMap<String, Object>();
+	private static Map<String, Object> proxyCache = new HashMap<String, Object>();
 
 	/**
 	 * 获取代理对象
@@ -34,12 +34,12 @@ public class MapperProxyBuilder {
 	public static <T> Object getMapperProxy(Class<T> mapperClass,
 			Executor executor, Map<String, MapStatement> mapStatments) {
 		Object result = null;
-		Object cachedProxy = cache.get(mapperClass.getName());
+		Object cachedProxy = proxyCache.get(mapperClass.getName());
 		if (cachedProxy == null) {
 			result = Proxy.newProxyInstance(mapperClass.getClassLoader(),
 					new Class[] { mapperClass }, new MapperProxy(executor,
 							mapStatments, mapperClass));
-			cache.put(mapperClass.getName(), result);
+			proxyCache.put(mapperClass.getName(), result);
 			logger.debug(String.format("代理缓存中不存在%s的代理,动态创建并缓存", mapperClass));
 		} else {
 			result = cachedProxy;

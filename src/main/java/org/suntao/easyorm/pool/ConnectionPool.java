@@ -119,6 +119,17 @@ public class ConnectionPool {
 		return result;
 	}
 
+	/**
+	 * 从 JDBC 获取一个新的连接
+	 * <p>
+	 * 创建新的连接<br>
+	 * 一般用于初始化连接池<br>
+	 * 也可用于连接池不足时创建临时连接
+	 * <p>
+	 * 线程安全,同步方法
+	 * 
+	 * @return 连接
+	 */
 	private synchronized Connection getNewConnectionFromJDBC() {
 		Connection result = null;
 		try {
@@ -209,7 +220,7 @@ public class ConnectionPool {
 			logger.debug("请不要向池中返回一个null");
 			result = false;
 		}
-		// 如果本池包含池连接
+		// 如果本池包含该连接
 		else if (connectionsMap.containsKey(conn)) {
 			try {
 				connectionsMap.replace(conn, false);

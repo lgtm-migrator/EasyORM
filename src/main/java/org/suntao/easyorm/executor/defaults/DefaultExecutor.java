@@ -23,16 +23,23 @@ import org.suntao.easyorm.utils.Utils;
  */
 public class DefaultExecutor implements Executor {
 	/**
-	 * 数据库连接
-	 */
-	private Connection conn;
-	/**
 	 * 结果映射器
 	 */
 	private ResultMapping mapping;
 	private SqlSession sqlSession;
 	private static Logger logger = Logger.getLogger(DefaultExecutor.class);
 
+	/**
+	 * 解释器实现
+	 * 
+	 * @param sqlSession
+	 *            连接 <br>
+	 *            用于创建连接和归还连接<br>
+	 *            解释器自身并不持有连接
+	 * @param mapping
+	 *            映射器<br>
+	 *            如果是查询流程,需要对结果进行映射
+	 */
 	public DefaultExecutor(SqlSession sqlSession, ResultMapping mapping) {
 		super();
 		this.sqlSession = sqlSession;
@@ -43,7 +50,7 @@ public class DefaultExecutor implements Executor {
 	public Object execute(MapStatement mapStatement, Object[] params) {
 		Object result = null;// 返回对象
 		ResultSet resultSet = null;// 结果集
-		conn = sqlSession.getConnection();// 连接
+		Connection conn = sqlSession.getConnection();// 连接
 		int influRows = -1;// 影响行数
 		String sqlStr = mapStatement.getStatmentSQL();// 执行语句
 		// 是否可执行
@@ -71,6 +78,7 @@ public class DefaultExecutor implements Executor {
 							preparedStatement.setDate(index,
 									(Date) currentParam);
 						} else if (currentParam instanceof java.util.Date) {
+							// 如果是java.util.date,转化成java.sql.date
 							preparedStatement
 									.setDate(
 											index,
@@ -114,8 +122,8 @@ public class DefaultExecutor implements Executor {
 						result = null;
 						break;
 					}
-				} else {
-					// 如果是查询流程则对结果进行映射
+				}// 如果是查询流程则对结果进行映射
+				else {
 					logger.debug("SELECT流程");
 					result = mapping.mapObject(mapStatement.getResultMap(),
 							resultSet);

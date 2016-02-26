@@ -12,6 +12,8 @@ import javax.net.ssl.SSLEngineResult.Status;
 
 import org.apache.log4j.Logger;
 import org.suntao.easyorm.annotation.DataBaseModel;
+import org.suntao.easyorm.configuration.DatabaseConfig;
+import org.suntao.easyorm.configuration.EasyormConfig;
 import org.suntao.easyorm.executor.Executor;
 import org.suntao.easyorm.executor.defaults.DefaultExecutor;
 import org.suntao.easyorm.map.MapStatement;
@@ -23,8 +25,6 @@ import org.suntao.easyorm.proxy.MapperProxyBuilder;
 import org.suntao.easyorm.scan.Scanner;
 import org.suntao.easyorm.scan.defaults.DefaultScanner;
 import org.suntao.easyorm.session.SqlSession;
-import org.suntao.easyorm.xmlparse.DatabaseConfig;
-import org.suntao.easyorm.xmlparse.EasyormConfig;
 
 /**
  * SqlSession实现

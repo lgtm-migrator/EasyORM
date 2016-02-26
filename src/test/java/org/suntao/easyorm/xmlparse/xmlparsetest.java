@@ -11,6 +11,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.suntao.easyorm.configuration.DatabaseConfig;
+import org.suntao.easyorm.configuration.EasyormConfig;
+import org.suntao.easyorm.configuration.MapperConfig;
+import org.suntao.easyorm.configuration.XmlParse;
 import org.suntao.easyorm.map.MapStatement;
 import org.w3c.dom.Document;
 

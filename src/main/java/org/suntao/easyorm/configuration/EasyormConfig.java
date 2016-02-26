@@ -1,4 +1,4 @@
-package org.suntao.easyorm.xmlparse;
+package org.suntao.easyorm.configuration;
 
 import java.util.HashMap;
 import java.util.Map;

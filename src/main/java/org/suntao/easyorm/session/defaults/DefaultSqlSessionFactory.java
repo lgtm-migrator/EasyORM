@@ -1,12 +1,18 @@
 package org.suntao.easyorm.session.defaults;
 
 import org.apache.log4j.Logger;
+import org.suntao.easyorm.configuration.DatabaseConfig;
+import org.suntao.easyorm.configuration.EasyormConfig;
+import org.suntao.easyorm.configuration.XmlParse;
 import org.suntao.easyorm.session.SqlSession;
 import org.suntao.easyorm.session.SqlSessionFactory;
-import org.suntao.easyorm.xmlparse.DatabaseConfig;
-import org.suntao.easyorm.xmlparse.EasyormConfig;
-import org.suntao.easyorm.xmlparse.XmlParse;
 
+/**
+ * SqlSessionFactory 实现
+ * 
+ * @author suntao
+ *
+ */
 public class DefaultSqlSessionFactory implements SqlSessionFactory {
 	private EasyormConfig easyormConfig;
 	private static Logger logger = Logger.getLogger(SqlSessionFactory.class);

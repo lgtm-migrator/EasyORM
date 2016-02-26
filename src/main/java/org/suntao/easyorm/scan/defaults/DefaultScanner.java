@@ -23,12 +23,12 @@ import java.util.jar.JarFile;
 import org.apache.log4j.Logger;
 import org.suntao.easyorm.annotation.Param;
 import org.suntao.easyorm.annotation.SQL;
+import org.suntao.easyorm.configuration.EasyormConfig;
+import org.suntao.easyorm.configuration.XmlParse;
 import org.suntao.easyorm.map.MapStatement;
 import org.suntao.easyorm.map.ResultMapConfig;
 import org.suntao.easyorm.map.ResultMappingType;
 import org.suntao.easyorm.scan.Scanner;
-import org.suntao.easyorm.xmlparse.EasyormConfig;
-import org.suntao.easyorm.xmlparse.XmlParse;
 import org.w3c.dom.Document;
 
 /**

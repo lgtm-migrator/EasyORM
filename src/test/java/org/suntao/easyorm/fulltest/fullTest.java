@@ -4,11 +4,11 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.suntao.easyorm.configuration.EasyormConfig;
 import org.suntao.easyorm.session.SqlSession;
 import org.suntao.easyorm.session.SqlSessionFactory;
 import org.suntao.easyorm.session.defaults.DefaultSqlSessionFactory;
 import org.suntao.easyorm.testDAO.courseinfoMapper;
-import org.suntao.easyorm.xmlparse.EasyormConfig;
 
 public class fullTest {
 	SqlSessionFactory sqlSessionFactory;
