@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.suntao.easyorm.configuration.DatabaseConfig;
 import org.suntao.easyorm.configuration.EasyormConfig;
 import org.suntao.easyorm.configuration.XmlParse;
+import org.suntao.easyorm.exceptions.EasyormConfigException;
 import org.suntao.easyorm.session.SqlSession;
 import org.suntao.easyorm.session.SqlSessionFactory;
 
@@ -47,20 +48,29 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
 		this.easyormConfig = easyormConfig;
 	}
 
-	/**
-	 * 使用xml配置文件配置
-	 * 
-	 * @param xmlFileLocation
-	 *            配置文件位置
-	 */
-	public DefaultSqlSessionFactory(String xmlFileLocation) {
-		logger.debug("使用XML配置文件配置SqlSessionFactory");
-		this.easyormConfig = XmlParse.configParse(xmlFileLocation);
-	}
+	// 放弃XML文件配置
+	// /**
+	// * 使用xml配置文件配置
+	// *
+	// * @param xmlFileLocation
+	// * 配置文件位置
+	// */
+	// public DefaultSqlSessionFactory(String xmlFileLocation) {
+	// logger.debug("使用XML配置文件配置SqlSessionFactory");
+	// this.easyormConfig = XmlParse.configParse(xmlFileLocation);
+	// }
 
 	@Override
 	public SqlSession openSession() {
-		return new DefaultSqlSession(easyormConfig);
+		SqlSession result = null;
+		try {
+			result = new DefaultSqlSession(easyormConfig);
+		} catch (EasyormConfigException e) {
+			// 需要进行提示
+			e.printStackTrace();
+		}
+		return result;
+
 	}
 
 }

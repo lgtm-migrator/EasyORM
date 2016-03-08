@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.suntao.easyorm.annotation.DataBaseModel;
 import org.suntao.easyorm.configuration.DatabaseConfig;
 import org.suntao.easyorm.configuration.EasyormConfig;
+import org.suntao.easyorm.exceptions.EasyormConfigException;
 import org.suntao.easyorm.executor.Executor;
 import org.suntao.easyorm.executor.defaults.DefaultExecutor;
 import org.suntao.easyorm.map.MapStatement;
@@ -21,6 +22,7 @@ import org.suntao.easyorm.map.ResultMapConfig;
 import org.suntao.easyorm.map.ResultMapping;
 import org.suntao.easyorm.map.ResultMappingType;
 import org.suntao.easyorm.map.defaults.DefaultResultMapping;
+import org.suntao.easyorm.pool.ConnectionPool;
 import org.suntao.easyorm.proxy.MapperProxyBuilder;
 import org.suntao.easyorm.scan.Scanner;
 import org.suntao.easyorm.scan.defaults.DefaultScanner;
@@ -61,6 +63,12 @@ public class DefaultSqlSession implements SqlSession {
 	 * log4j
 	 */
 	private static Logger logger = Logger.getLogger(SqlSession.class);
+	/**
+	 * 连接池
+	 */
+	private ConnectionPool connectionPool;
+
+	private boolean isPooled = false;
 
 	/**
 	 * 创建一个SqlSession
@@ -69,38 +77,42 @@ public class DefaultSqlSession implements SqlSession {
 	 * 请务必确认有数据库配置
 	 * 
 	 * @param easyormConfig
+	 * @throws EasyormConfigException
 	 */
-	public DefaultSqlSession(EasyormConfig easyormConfig) {
+	public DefaultSqlSession(EasyormConfig easyormConfig)
+			throws EasyormConfigException {
 		this.easyormConfig = easyormConfig;
 		this.databaseConfig = easyormConfig.getDatabaseConfig();
 		this.resultMapping = new DefaultResultMapping();
 		this.executor = new DefaultExecutor(this, this.resultMapping);
-		if (scanner == null)
-			scanner = new DefaultScanner(easyormConfig);
+		this.scanner = new DefaultScanner(easyormConfig);
+		this.isPooled = easyormConfig.isPooled();
 		scanner.scan();
 		this.mapStatementCache = scanner.getScannedMapStatement();
-		check();
+		if (isPooled)
+			this.connectionPool = new ConnectionPool(databaseConfig,
+					easyormConfig.getPoolSize());
+		if (!check())// 如果检查失败
+			throw new EasyormConfigException();
 	}
 
 	/**
 	 * 校验本SqlSession是否可以完成工作
 	 */
-	public void check() {
-		logger.debug(String.format("开始校验配置实体"));
-		if (easyormConfig != null) {
-			logger.debug(easyormConfig + "\n如果当中存在null则说明该属性没有初始化");
-		}
-		if (databaseConfig == null) {
-			logger.fatal("致命错误,退出程序,必须配置数据库否则EasyOrm无法使用");
-			System.exit(1);
-		}
-		logger.debug("尝试获取连接");
+	public boolean check() {
+		boolean result = true;
+		if (easyormConfig != null && databaseConfig != null) {
+			// 如果EasyORM配置实体和数据库配置实体都存在
+			result = true;
+		} else
+			// 否则
+			result = false;
 		try {
 			returnConnection(getConnection());
 		} catch (Exception e) {
-			logger.warn("创建和归还连接失败(更有可能是归还数据库连接失败)" + e.toString());
+			e.printStackTrace();
 		}
-		logger.debug("校验完成,EasyORM可以完成对连接的创建和关闭");
+		return result;
 	}
 
 	/**
@@ -173,24 +185,22 @@ public class DefaultSqlSession implements SqlSession {
 	@Override
 	public Connection getConnection() {
 		Connection result = null;
-		try {
-			Class.forName(databaseConfig.getDriver());
-			result = DriverManager.getConnection(databaseConfig.getJdbcurl(),
-					databaseConfig.getUsername(), databaseConfig.getPassword());
-		} catch (ClassNotFoundException e) {
-			logger.fatal("致命错误,程序退出,JDBC Driver 没有找到\n请确认driver名称正确,请确认相应jar包已加入Referenced Libraries");
-			System.exit(1);
-		} catch (SQLException e) {
-			logger.error("JDBC 连接失败或者存在问题,请检查");
-		} catch (NullPointerException e) {
-			logger.fatal("致命错误,程序退出,JDBC 数据库配置不存在,请检查\n数据库配置详情:"
-					+ databaseConfig);
-			System.exit(1);
+		if ((isPooled && connectionPool != null)) {
+			result = connectionPool.getConnection();
+		} else {
+			try {
+				Class.forName(databaseConfig.getDriver());
+				result = DriverManager.getConnection(
+						databaseConfig.getJdbcurl(),
+						databaseConfig.getUsername(),
+						databaseConfig.getPassword());
+			} catch (ClassNotFoundException e) {
+				System.exit(1);
+			} catch (SQLException e) {
+			} catch (NullPointerException e) {
+				System.exit(1);
+			}
 		}
-		if (result != null)
-			logger.debug("创建了一个数据库连接" + result);
-		else
-			logger.warn("创建了一个空连接,请检查网络是否连接");
 		return result;
 	}
 
@@ -303,16 +313,18 @@ public class DefaultSqlSession implements SqlSession {
 
 	@Override
 	public void returnConnection(Connection conn) {
-		logger.debug("向SqlSession返回了一个数据库连接" + conn);
-		try {
-			conn.close();
-			logger.debug(String.format("连接 %s已关闭", conn));
-		} catch (SQLException e) {
-			logger.warn(String.format("连接 %s关闭失败", conn));
-		} catch (NullPointerException e) {
-			logger.error("请检查为何向SqlSession返回了null连接");
-			e.printStackTrace();
+		if (isPooled) {
+			connectionPool.returnConnection(conn);
+		} else {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} catch (NullPointerException e) {
+				e.printStackTrace();
+			}
 		}
+
 	}
 
 	@Override
@@ -440,5 +452,22 @@ public class DefaultSqlSession implements SqlSession {
 			logger.error("执行本方法失败,参数为空或者没有DatabaseModel注解");
 		}
 		return result;
+	}
+
+	@Override
+	public void destroy() {
+		if (isPooled && this.connectionPool != null)
+			this.connectionPool.releasePool();
+		this.databaseConfig = null;
+		this.easyormConfig = null;
+		this.executor = null;
+		for (String k : this.mapStatementCache.keySet()) {
+			Object o = this.mapStatementCache.get(k);
+			o = null;
+			k = null;
+		}
+		this.scanner = null;
+		this.resultMapping = null;
+		System.gc();
 	}
 }

@@ -97,4 +97,9 @@ public interface SqlSession {
 	 * @return 数据库实体列表
 	 */
 	<T> List<T> selectALL(Class<T> modelClass);
+
+	/**
+	 * 摧毁这个SqlSession
+	 */
+	void destroy();
 }

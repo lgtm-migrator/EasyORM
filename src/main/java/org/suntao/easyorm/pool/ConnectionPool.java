@@ -7,29 +7,42 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
+import org.suntao.easyorm.configuration.DatabaseConfig;
+import org.suntao.easyorm.exceptions.GetConnectionException;
 
 /**
  * 连接池
  * <p>
- * 使用线程安全的ConcurrentHashMap作为存储连接的容器
+ * 使用线程安全的ConcurrentHashMap作为存储连接的容器<br>
+ * 所有对该容器的访问共享一把锁
  * 
  * @author suntao
  *
  */
 public class ConnectionPool {
-	private String driver;
-	private String url;
-	private String username;
-	private String passwd;
-	private int poolSize;
-	private Boolean isInit;
 	public static final int DEFAULT_POOL_SIZE = 10;
 
-	private Map<Connection, Boolean> connectionsMap;
 	/**
 	 * log4j
 	 **/
 	private static Logger logger = Logger.getLogger(ConnectionPool.class);
+	private Map<Connection, Boolean> connectionsMap;
+	private String driver;
+	private Boolean isInit;
+	private String passwd;
+	private int poolSize;
+	private String url;
+	private String username;
+
+	public ConnectionPool(DatabaseConfig config) {
+		this(config.getDriver(), config.getJdbcurl(), config.getUsername(),
+				config.getPassword());
+	}
+
+	public ConnectionPool(DatabaseConfig config, int poolSize) {
+		this(config.getDriver(), config.getJdbcurl(), config.getUsername(),
+				config.getPassword(), poolSize);
+	}
 
 	/**
 	 * 创建一个连接池并初始化
@@ -52,15 +65,7 @@ public class ConnectionPool {
 	 */
 	public ConnectionPool(String driver, String url, String username,
 			String passwd) {
-		super();
-		this.driver = driver;
-		this.url = url;
-		this.username = username;
-		this.passwd = passwd;
-		this.poolSize = DEFAULT_POOL_SIZE;
-		this.isInit = false;
-		this.connectionsMap = new ConcurrentHashMap<Connection, Boolean>();
-		initPool();
+		this(driver, url, username, passwd, DEFAULT_POOL_SIZE);
 	}
 
 	/**
@@ -114,7 +119,11 @@ public class ConnectionPool {
 			logger.debug("连接" + result + "被取出");
 		else {
 			logger.warn("请注意此连接池已经用尽,现在创建了一个新的连接以响应请求");
-			result = getNewConnectionFromJDBC();
+			try {
+				result = getNewConnectionFromJDBC();
+			} catch (GetConnectionException e) {
+				e.printStackTrace();
+			}
 		}
 		return result;
 	}
@@ -129,16 +138,19 @@ public class ConnectionPool {
 	 * 线程安全,同步方法
 	 * 
 	 * @return 连接
+	 * @throws GetConnectionException
 	 */
-	private synchronized Connection getNewConnectionFromJDBC() {
+	private synchronized Connection getNewConnectionFromJDBC()
+			throws GetConnectionException {
 		Connection result = null;
 		try {
 			result = DriverManager.getConnection(url, username, passwd);
 			logger.debug("创建一个新连接" + result);
 		} catch (SQLException e) {
-			logger.debug("创建连接失败");
 			e.printStackTrace();
 		}
+		if (result == null)
+			throw new GetConnectionException();
 		return result;
 	}
 
@@ -146,21 +158,25 @@ public class ConnectionPool {
 	 * 初始化数据连接池
 	 */
 	private void initPool() {
-		try {
-			Class.forName(driver);
-			for (int i = 0; i < poolSize; i++) {
-				Connection currentConn = getNewConnectionFromJDBC();
-				if (currentConn != null) {
-					connectionsMap.put(currentConn, false);
-					logger.debug("连接" + currentConn + "加入连接池");
+		if (!isInit) {// 如果还没有初始化
+			try {
+				Class.forName(driver);
+				for (int i = 0; i < poolSize; i++) {
+					Connection currentConn = getNewConnectionFromJDBC();
+					if (currentConn != null) {
+						connectionsMap.put(currentConn, false);
+						logger.debug("连接" + currentConn + "加入连接池");
+					}
 				}
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (GetConnectionException e) {
+				logger.fatal("初始化连接池时无法获取有效连接");
+				e.printStackTrace();
 			}
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			isInit = true;
+			logger.debug("共创建" + connectionsMap.size() + "个连接");
 		}
-		isInit = true;
-		logger.debug("共创建" + connectionsMap.size() + "个连接");
-
 	}
 
 	/**
@@ -178,7 +194,7 @@ public class ConnectionPool {
 	 * @return size
 	 */
 	public int PoolSize() {
-		return poolSize;
+		return connectionsMap.size();
 	}
 
 	/**

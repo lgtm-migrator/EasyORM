@@ -2,8 +2,10 @@ package org.suntao.easyorm.fulltest;
 
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.suntao.easyorm.configuration.DatabaseConfig;
 import org.suntao.easyorm.configuration.EasyormConfig;
 import org.suntao.easyorm.session.SqlSession;
 import org.suntao.easyorm.session.SqlSessionFactory;
@@ -17,28 +19,27 @@ public class fullTest {
 
 	@Before
 	public void setUp() throws Exception {
-		sqlSessionFactory = new DefaultSqlSessionFactory(this.getClass()
-				.getClassLoader().getResource("xmltest.xml").getPath());
+		DatabaseConfig databaseConfig = new DatabaseConfig(
+				"com.mysql.jdbc.Driver", "jdbc:mysql://42.96.206.67:3306/stu",
+				"stu", "admin");
+		EasyormConfig easyormConfig = new EasyormConfig(databaseConfig, true,
+				15);
+		sqlSessionFactory = new DefaultSqlSessionFactory(easyormConfig);
 		sqlSession = sqlSessionFactory.openSession();
 		courseinfomapper = sqlSession.getMapper(courseinfoMapper.class);
 	}
 
 	@Test
 	public void testList() {
-		List<courseinfo> courses = sqlSession.selectALL(courseinfo.class);
-		sqlSession.selectALL(courseinfo.class);
-		courseinfo c = new courseinfo();
-		c.courseid = 17;
-		c.classhour = 64;
-		c.course = "测试名称修改4";
-		c.score = (float) 3.75;
-		c.teacherid = 100096;
-		System.out.println(sqlSession.updateByPrimaryKey(c));
-		for (courseinfo ci : courses) {
-			System.out.println(ci);
+		List<courseinfo> cs = sqlSession.selectALL(courseinfo.class);
+		for(courseinfo c:cs){
+			System.out.println(c);
 		}
-		System.out.println("ID 17 信息为:" + sqlSession.selectByPrimaryKey(c));
-		
-		
+	}
+
+	@After
+	public void destroy() {
+		sqlSession.destroy();
+
 	}
 }

@@ -13,20 +13,24 @@ import java.util.Map;
  */
 public class EasyormConfig {
 	/**
+	 * 连接池大小
+	 */
+	private int poolSize;
+	/**
+	 * 是否使用连接池
+	 */
+	private boolean isPooled = false;
+
+	/**
 	 * DAO接口文件包位置
 	 */
 	private String daoPath;
-
-	public EasyormConfig(String daoPath, DatabaseConfig databaseConfig) {
-		super();
-		this.daoPath = daoPath;
-		this.databaseConfig = databaseConfig;
-	}
 
 	/**
 	 * 数据库配置
 	 */
 	private DatabaseConfig databaseConfig;
+
 	/**
 	 * mapper位置配置
 	 */
@@ -39,15 +43,8 @@ public class EasyormConfig {
 	public EasyormConfig() {
 		this.databaseConfig = new DatabaseConfig();
 		this.mapperConfigs = new HashMap<String, MapperConfig>();
-	}
-
-	@Override
-	public String toString() {
-		String result = null;
-		result = String.format(
-				"DaoPath:%s DBConfig:%s mapperConfigs:%s XmlsPath:%s", daoPath,
-				databaseConfig, mapperConfigs, mapperXmlPath);
-		return result;
+		this.daoPath = null;
+		this.isPooled = false;
 	}
 
 	/**
@@ -63,6 +60,33 @@ public class EasyormConfig {
 		super();
 		this.databaseConfig = databaseConfig;
 		this.mapperConfigs = mapperConfigs;
+	}
+
+	public EasyormConfig(DatabaseConfig databaseConfig, boolean pooled,
+			int pooledsize) {
+		this(pooledsize, pooled, null, databaseConfig, null, null);
+	}
+
+	public EasyormConfig(DatabaseConfig databaseConfig, boolean pooled) {
+		this(10, pooled, null, databaseConfig, null, null);
+	}
+
+	public EasyormConfig(int poolSize, boolean isPooled, String daoPath,
+			DatabaseConfig databaseConfig,
+			Map<String, MapperConfig> mapperConfigs, String mapperXmlPath) {
+		super();
+		this.poolSize = poolSize;
+		this.isPooled = isPooled;
+		this.daoPath = daoPath;
+		this.databaseConfig = databaseConfig;
+		this.mapperConfigs = mapperConfigs;
+		this.mapperXmlPath = mapperXmlPath;
+	}
+
+	public EasyormConfig(String daoPath, DatabaseConfig databaseConfig) {
+		super();
+		this.daoPath = daoPath;
+		this.databaseConfig = databaseConfig;
 	}
 
 	public String getDaoPath() {
@@ -103,6 +127,36 @@ public class EasyormConfig {
 
 	public void setMapperXmlPath(String mapperXmlPath) {
 		this.mapperXmlPath = mapperXmlPath;
+	}
+
+	@Override
+	public String toString() {
+		String result = null;
+		result = String.format(
+				"DaoPath:%s DBConfig:%s mapperConfigs:%s XmlsPath:%s", daoPath,
+				databaseConfig, mapperConfigs, mapperXmlPath);
+		return result;
+	}
+
+	public int getPoolSize() {
+		return poolSize;
+	}
+
+	public void setPoolSize(int poolSize) {
+		this.poolSize = poolSize;
+	}
+
+	public boolean isPooled() {
+		return isPooled;
+	}
+
+	/**
+	 * 是否池化
+	 * 
+	 * @param isPooled
+	 */
+	public void pooled(boolean isPooled) {
+		this.isPooled = isPooled;
 	}
 
 }
