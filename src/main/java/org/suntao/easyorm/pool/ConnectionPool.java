@@ -5,9 +5,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
-import org.apache.log4j.Logger;
 import org.suntao.easyorm.configuration.DatabaseConfig;
+import org.suntao.easyorm.exceptions.ConnectionPoolException;
 import org.suntao.easyorm.exceptions.GetConnectionException;
 
 /**
@@ -22,10 +23,8 @@ import org.suntao.easyorm.exceptions.GetConnectionException;
 public class ConnectionPool {
 	public static final int DEFAULT_POOL_SIZE = 10;
 
-	/**
-	 * log4j
-	 **/
-	private static Logger logger = Logger.getLogger(ConnectionPool.class);
+	private static Logger logger = Logger.getLogger(ConnectionPool.class
+			.getName());
 	private Map<Connection, Boolean> connectionsMap;
 	private String driver;
 	private Boolean isInit;
@@ -105,25 +104,31 @@ public class ConnectionPool {
 	 * 返回此连接到连接池
 	 * 
 	 * @return
+	 * @throws ConnectionPoolException
 	 */
-	public synchronized Connection getConnection() {
+	public synchronized Connection getConnection()
+			throws ConnectionPoolException {
 		Connection result = null;
-		for (Connection conn : connectionsMap.keySet()) {
-			if (!connectionsMap.get(conn)) {
-				connectionsMap.replace(conn, true);
-				result = conn;
-				break;
+		if (isInit()) {
+			for (Connection conn : connectionsMap.keySet()) {
+				if (!connectionsMap.get(conn)) {
+					connectionsMap.replace(conn, true);
+					result = conn;
+					break;
+				}
 			}
-		}
-		if (result != null)
-			logger.debug("连接" + result + "被取出");
-		else {
-			logger.warn("请注意此连接池已经用尽,现在创建了一个新的连接以响应请求");
-			try {
-				result = getNewConnectionFromJDBC();
-			} catch (GetConnectionException e) {
-				e.printStackTrace();
+			if (result != null)
+				logger.info("连接" + result + "被取出");
+			else {
+				logger.warning("请注意此连接池已经用尽,现在创建了一个新的连接以响应请求");
+				try {
+					result = getNewConnectionFromJDBC();
+				} catch (GetConnectionException e) {
+					e.printStackTrace();
+				}
 			}
+		} else {
+			throw new ConnectionPoolException("因为连接池还没有初始化,所以返回连接失败");
 		}
 		return result;
 	}
@@ -145,7 +150,7 @@ public class ConnectionPool {
 		Connection result = null;
 		try {
 			result = DriverManager.getConnection(url, username, passwd);
-			logger.debug("创建一个新连接" + result);
+			logger.info("创建一个新连接" + result);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -165,17 +170,17 @@ public class ConnectionPool {
 					Connection currentConn = getNewConnectionFromJDBC();
 					if (currentConn != null) {
 						connectionsMap.put(currentConn, false);
-						logger.debug("连接" + currentConn + "加入连接池");
+						logger.info("连接" + currentConn + "加入连接池");
 					}
 				}
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			} catch (GetConnectionException e) {
-				logger.fatal("初始化连接池时无法获取有效连接");
+				logger.severe("初始化连接池时无法获取有效连接");
 				e.printStackTrace();
 			}
 			isInit = true;
-			logger.debug("共创建" + connectionsMap.size() + "个连接");
+			logger.info("共创建" + connectionsMap.size() + "个连接");
 		}
 	}
 
@@ -204,13 +209,13 @@ public class ConnectionPool {
 		for (Connection conn : connectionsMap.keySet()) {
 			try {
 				conn.close();
-				logger.debug("连接" + conn + "已关闭");
+				logger.info("连接" + conn + "已关闭");
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}
 		connectionsMap.clear();
-		logger.debug("释放完成");
+		logger.info("释放完成");
 	}
 
 	/**
@@ -227,38 +232,41 @@ public class ConnectionPool {
 	 * @param conn
 	 *            数据库连接
 	 * @return 是否成功
+	 * @throws ConnectionPoolException
 	 */
-	public synchronized Boolean returnConnection(Connection conn) {
+	public synchronized Boolean returnConnection(Connection conn)
+			throws ConnectionPoolException {
 		Boolean result = false;
-
-		// 当参数为null
-		if (conn == null) {
-			logger.debug("请不要向池中返回一个null");
-			result = false;
-		}
-		// 如果本池包含该连接
-		else if (connectionsMap.containsKey(conn)) {
-			try {
-				connectionsMap.replace(conn, false);
-				logger.debug("连接" + conn + "回到连接池");
-				result = true;
-			} catch (Exception e) {
+		if (isInit()) { // 当参数为null
+			if (conn == null) {
+				logger.info("请不要向池中返回一个null");
 				result = false;
-				e.printStackTrace();
 			}
-		}
-		// 如若不包含此连接
-		else {
-			try {
-				logger.debug("不属于池的连接" + conn + "返回到池内,被关闭");
-				conn.close();
-				result = true;
-			} catch (SQLException e) {
-				result = false;
-				e.printStackTrace();
+			// 如果本池包含该连接
+			else if (connectionsMap.containsKey(conn)) {
+				try {
+					connectionsMap.replace(conn, false);
+					logger.info("连接" + conn + "回到连接池");
+					result = true;
+				} catch (Exception e) {
+					result = false;
+					e.printStackTrace();
+				}
 			}
+			// 如若不包含此连接
+			else {
+				try {
+					logger.info("不属于池的连接" + conn + "返回到池内,被关闭");
+					conn.close();
+					result = true;
+				} catch (SQLException e) {
+					result = false;
+					e.printStackTrace();
+				}
+			}
+		} else {
+			throw new ConnectionPoolException("该连接池已经关闭,返回连接失败");
 		}
-
 		return result;
 	}
 }

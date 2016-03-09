@@ -1,6 +1,7 @@
 package org.suntao.easyorm.session;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -49,8 +50,9 @@ public interface SqlSession {
 	 * @param obj
 	 *            实体
 	 * @return 影响条数
+	 * @throws SQLException 
 	 */
-	Integer updateByPrimaryKey(Object obj);
+	Integer updateByPrimaryKey(Object obj) throws SQLException;
 
 	/**
 	 * 插入一条数据
@@ -60,8 +62,9 @@ public interface SqlSession {
 	 * 
 	 * @param obj
 	 * @return
+	 * @throws SQLException 
 	 */
-	Integer insert(Object obj);
+	Integer insert(Object obj) throws SQLException;
 
 	/**
 	 * 删除一条数据
@@ -74,8 +77,9 @@ public interface SqlSession {
 	 * @param obj
 	 * @return 影响条数<br>
 	 *         正常执行流程的结果>=0
+	 * @throws SQLException 
 	 */
-	Integer deleteByPrimaryKey(Object obj);
+	Integer deleteByPrimaryKey(Object obj) throws SQLException;
 
 	/**
 	 * 根据主键查询一条数据
@@ -86,8 +90,9 @@ public interface SqlSession {
 	 *            对象<br>
 	 *            该对象主键字段应该被填充
 	 * @return 对象所对应的实体
+	 * @throws SQLException 
 	 */
-	<T> T selectByPrimaryKey(T obj);
+	<T> T selectByPrimaryKey(T obj) throws SQLException;
 
 	/**
 	 * 获取该表所有数据并映射为实体列表
@@ -95,8 +100,9 @@ public interface SqlSession {
 	 * @param modelClass
 	 *            数据库实体的类
 	 * @return 数据库实体列表
+	 * @throws SQLException 
 	 */
-	<T> List<T> selectALL(Class<T> modelClass);
+	<T> List<T> selectALL(Class<T> modelClass) throws SQLException;
 
 	/**
 	 * 摧毁这个SqlSession

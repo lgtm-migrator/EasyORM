@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.suntao.easyorm.exceptions.ConnectionPoolException;
 import org.suntao.easyorm.pool.ConnectionPool;
 
 public class pooltest {
@@ -13,13 +14,22 @@ public class pooltest {
 				"stu", "admin");
 		List<Connection> conns = new ArrayList<Connection>();
 		for (int i = 0; i < 20; i++) {
-			Connection current = connectionPool.getConnection();
+			Connection current = null;
+			try {
+				current = connectionPool.getConnection();
+			} catch (ConnectionPoolException e) {
+				e.printStackTrace();
+			}
 			if (current != null)
 				conns.add(current);
 			System.out.println(current);
 		}
 		for (Connection conn : conns) {
-			connectionPool.returnConnection(conn);
+			try {
+				connectionPool.returnConnection(conn);
+			} catch (ConnectionPoolException e) {
+				e.printStackTrace();
+			}
 		}
 		connectionPool.releasePool();
 	}

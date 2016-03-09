@@ -1,13 +1,5 @@
 package org.suntao.easyorm.executor;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import org.suntao.easyorm.session.SqlSession;
-import org.suntao.easyorm.session.defaults.DefaultSqlSessionFactory;
-
 public class executortest {
 	public static void main(String[] args) {
 //		SqlSession session = new DefaultSqlSessionFactory(

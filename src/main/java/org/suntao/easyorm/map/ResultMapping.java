@@ -13,20 +13,20 @@ public interface ResultMapping {
 	/**
 	 * 获取查询结果是否成功
 	 * <p>
-	 * 影响条数>0则判断为成功
+	 * 结果集条数>0则判断为成功
 	 * 
 	 * @param resultMap
 	 * @param resultSet
-	 * @return
+	 * @return 结果集行数是否大于0
 	 */
 	public Boolean getBoolean(ResultMapConfig<?> resultMap, ResultSet resultSet);
 
 	/**
-	 * 返回查询结果影响的条数
+	 * 返回查询结果集的行数
 	 * 
 	 * @param resultMap
 	 * @param resultSet
-	 * @return
+	 * @return 结果集的行数
 	 */
 	public Integer getInteger(ResultMapConfig<?> resultMap, ResultSet resultSet);
 
@@ -35,7 +35,7 @@ public interface ResultMapping {
 	 * 
 	 * @param resultMap
 	 * @param resultSet
-	 * @return
+	 * @return 
 	 */
 	public <T> List<T> getList(ResultMapConfig<T> resultMap, ResultSet resultSet);
 
@@ -55,8 +55,9 @@ public interface ResultMapping {
 	 * @param resultSet
 	 *            查询的结果集
 	 * @return 对应实体
+	 * @throws InstantiationException
 	 */
-	public <T> T getModel(ResultMapConfig<T> resultMap, ResultSet resultSet);
+	public <T> T getModel(ResultMapConfig<T> resultMap, ResultSet resultSet) throws InstantiationException;
 
 	/**
 	 * 根据resultMap自动映射相应的实体

@@ -1,5 +1,7 @@
 package org.suntao.easyorm.executor;
 
+import java.sql.SQLException;
+
 import org.suntao.easyorm.map.MapStatement;
 
 public interface Executor {
@@ -15,5 +17,6 @@ public interface Executor {
 	 *         <p>
 	 *         此处结果应该是映射后的结果
 	 */
-	Object execute(MapStatement mapStatment, Object[] params);
+	Object execute(MapStatement mapStatment, Object[] params)
+			throws SQLException;
 }

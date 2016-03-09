@@ -7,8 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
-import org.apache.log4j.Logger;
 import org.suntao.easyorm.map.ResultMapConfig;
 import org.suntao.easyorm.map.ResultMapping;
 import org.suntao.easyorm.map.ResultMappingType;
@@ -24,7 +24,8 @@ import org.suntao.easyorm.map.ResultMappingType;
  *
  */
 public class DefaultResultMapping implements ResultMapping {
-	private static Logger logger = Logger.getLogger(ResultMapping.class);
+	private static Logger logger = Logger.getLogger(ResultMapping.class
+			.getName());
 
 	@Override
 	public Boolean getBoolean(ResultMapConfig<?> resultMap, ResultSet resultSet) {
@@ -57,7 +58,13 @@ public class DefaultResultMapping implements ResultMapping {
 		List<T> result = new ArrayList<T>();
 		try {
 			while (resultSet.next()) {
-				result.add(getModel(resultMap, resultSet));
+				try {
+					result.add(getModel(resultMap, resultSet));
+				} catch (InstantiationException e) {
+					// 当无法创建实体的时候,打印并跳出循环
+					e.printStackTrace();
+					break;
+				}
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -65,36 +72,21 @@ public class DefaultResultMapping implements ResultMapping {
 		return result;
 	}
 
-	/**
-	 * 单个实体映射
-	 * <p>
-	 * 通过resultMap中的class对象,动态构造实体<br>
-	 * 并通过反射,遍历实体的fields和相应type,从resultSet获取数据并填充
-	 * <p>
-	 * 需要注意的是,field中的name需要与column相对应(不区分大小写)
-	 * <p>
-	 * 此方法只对resultSet当前行操作
-	 * 
-	 * 
-	 * @param objectClass
-	 *            需要返回的对象Class
-	 * @param resultSet
-	 *            查询的结果集
-	 * @return 对应实体
-	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> T getModel(ResultMapConfig<T> resultMap, ResultSet resultSet) {
+	public <T> T getModel(ResultMapConfig<T> resultMap, ResultSet resultSet)
+			throws InstantiationException {
 		Object result = null;
 		try {
-			// 构造实体
+			// 动态构造实体
 			result = Class.forName(resultMap.getModelClass().getName())
 					.newInstance();
 		} catch (InstantiationException e) {
 			// 如果该实体没有相应无参构造方法 提示并返回null
-			logger.error("请为实体: " + resultMap.getModelClass().getName()
+			logger.severe("请为实体: " + resultMap.getModelClass().getName()
 					+ " 添加无参的构造方法,以动态构造实体\n当前无法构造实体,所以返回null");
-			return null;
+			throw new InstantiationException("请为实体: "
+					+ resultMap.getModelClass().getName() + " 添加无参的构造方法");
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
@@ -126,7 +118,7 @@ public class DefaultResultMapping implements ResultMapping {
 				else if (type.equals(BigDecimal.class))
 					value = resultSet.getBigDecimal(fieldName);
 				else {
-					logger.warn(String.format("没有Type{%s}的相应处理方式",
+					logger.warning(String.format("没有Type{%s}的相应处理方式",
 							type.toString()));
 					continue;
 				}
@@ -134,7 +126,7 @@ public class DefaultResultMapping implements ResultMapping {
 				if (value != null)
 					f.set(result, value);
 			} catch (SQLException e) {
-				logger.warn(String.format(
+				logger.warning(String.format(
 						"Class:%s,Field:%s,该字段在ResultSet中不存在", result
 								.getClass().getName(), fieldName));
 				// e.printStackTrace();
@@ -151,7 +143,7 @@ public class DefaultResultMapping implements ResultMapping {
 	@Override
 	public Object mapObject(ResultMapConfig<?> resultMap, ResultSet resultSet) {
 		Object result = null;
-		logger.debug(String.format("开始一次结果映射,返回类型为%s,目标实体为%s",
+		logger.info(String.format("开始一次结果映射,返回类型为%s,目标实体为%s",
 				resultMap.getResultType(), resultMap.getModelClass()));
 		try {
 			ResultMappingType resultMappingType = resultMap.getResultType();
@@ -167,24 +159,29 @@ public class DefaultResultMapping implements ResultMapping {
 				break;
 			case ONEMODEL:
 				try {
-					if (resultSet.next())
-						result = getModel(resultMap, resultSet);
+					if (resultSet.next()) {
+						try {
+							result = getModel(resultMap, resultSet);
+						} catch (InstantiationException e) {
+							e.printStackTrace();
+						}
+					}
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
 				break;
 			case OTHER:
-				logger.warn("不可映射这种类型,返回null");
+				logger.warning("不可映射这种类型,返回null");
 				result = null;
 				break;
 			default:
-				logger.error("出现了枚举不存在的类型,或者说本方法没有进行处理,请检查源码");
+				logger.severe("出现了枚举不存在的类型,或者说本方法没有进行处理,请检查源码");
 				break;
 			}
 		} catch (NullPointerException nullPointerException) {
 			nullPointerException.printStackTrace();
 		}
-		logger.debug("结果映射完成");
+		logger.info("结果映射完成");
 		return result;
 	}
 }

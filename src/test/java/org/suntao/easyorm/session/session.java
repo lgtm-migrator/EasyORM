@@ -1,11 +1,6 @@
 package org.suntao.easyorm.session;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
-
 import org.junit.Test;
-import org.suntao.easyorm.session.defaults.DefaultSqlSessionFactory;
 
 public class session {
 

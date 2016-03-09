@@ -6,8 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.logging.Logger;
 
-import org.apache.log4j.Logger;
 import org.suntao.easyorm.executor.Executor;
 import org.suntao.easyorm.map.MapStatement;
 import org.suntao.easyorm.map.ResultMapping;
@@ -27,7 +27,7 @@ public class DefaultExecutor implements Executor {
 	 */
 	private ResultMapping mapping;
 	private SqlSession sqlSession;
-	private static Logger logger = Logger.getLogger(DefaultExecutor.class);
+	private static Logger logger = Logger.getLogger(DefaultExecutor.class.getName());
 
 	/**
 	 * 解释器实现
@@ -47,7 +47,8 @@ public class DefaultExecutor implements Executor {
 	}
 
 	@Override
-	public Object execute(MapStatement mapStatement, Object[] params) {
+	public Object execute(MapStatement mapStatement, Object[] params)
+			throws SQLException {
 		Object result = null;// 返回对象
 		ResultSet resultSet = null;// 结果集
 		Connection conn = sqlSession.getConnection();// 连接
@@ -55,7 +56,7 @@ public class DefaultExecutor implements Executor {
 		String sqlStr = mapStatement.getStatmentSQL();// 执行语句
 		// 是否可执行
 		if (sqlStr == null || sqlStr.isEmpty()) {
-			logger.warn(String.format("请使用注解或者xml配置文件为方法%s配置Sql语句,并确认Sql语句不为空",
+			logger.warning(String.format("请使用注解或者xml配置文件为方法%s配置Sql语句,并确认Sql语句不为空",
 					mapStatement.getId()));
 		}// 准备执行
 		else {
@@ -87,7 +88,7 @@ public class DefaultExecutor implements Executor {
 							preparedStatement.setFloat(index,
 									(Float) currentParam);
 						} else {
-							logger.error(String.format("传入的参数错误,当前不可接受%s类型的参数",
+							logger.severe(String.format("传入的参数错误,当前不可接受%s类型的参数",
 									currentParam.getClass().getName()));
 						}
 					}
@@ -102,7 +103,7 @@ public class DefaultExecutor implements Executor {
 				resultSet = preparedStatement.getResultSet();// 结果集
 				influRows = preparedStatement.getUpdateCount();// 影响行数
 				if (!isSelectProcedure) {
-					logger.debug("UPDATE/INSERT/DELETE流程");
+					logger.info("UPDATE/INSERT/DELETE流程");
 					ResultMappingType resultMappingType = mapStatement
 							.getResultMap().getResultType();
 					switch (resultMappingType) {
@@ -111,28 +112,29 @@ public class DefaultExecutor implements Executor {
 							result = true;
 						else
 							result = false;
-						logger.debug("查询返回布尔值," + result);
+						logger.info("查询返回布尔值," + result);
 						break;
 					case INTEGER:
 						result = influRows;
-						logger.debug("查询返回整型值," + result);
+						logger.info("查询返回整型值," + result);
 						break;
 					default:
-						logger.warn("请注意非select SQL仅可使用int和boolean两种返回类型");
+						logger.warning("请注意非select SQL仅可使用int和boolean两种返回类型");
 						result = null;
 						break;
 					}
 				}// 如果是查询流程则对结果进行映射
 				else {
-					logger.debug("SELECT流程");
+					logger.info("SELECT流程");
 					result = mapping.mapObject(mapStatement.getResultMap(),
 							resultSet);
 				}
 				preparedStatement.close();
 			} catch (SQLException e) {
-				logger.error("SQL发生错误,请确认SQL语句是否正确,列名,关键字,参数是否正确\n" + e);
+				logger.severe("SQL发生错误,请确认SQL语句是否正确,列名,关键字,参数是否正确\n" + e);
+				throw e;
 			} catch (Exception e) {
-				logger.error("出现了非SQL Exception:");
+				logger.severe("出现了非SQL Exception:");
 				e.printStackTrace();
 			}
 		}

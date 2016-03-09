@@ -3,8 +3,8 @@ package org.suntao.easyorm.proxy;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.logging.Logger;
 
-import org.apache.log4j.Logger;
 import org.suntao.easyorm.executor.Executor;
 import org.suntao.easyorm.map.MapStatement;
 import org.suntao.easyorm.map.ResultMapConfig;
@@ -16,7 +16,7 @@ import org.suntao.easyorm.scan.defaults.DefaultScanner;
  * @author suntao
  *
  */
-public class MapperProxy implements InvocationHandler {
+public class MapperProxyHandler implements InvocationHandler {
 	/**
 	 * 解释器
 	 */
@@ -27,12 +27,10 @@ public class MapperProxy implements InvocationHandler {
 	private Map<String, MapStatement> mapStatementsCache;
 
 	private Class<?> interfaceClass;
-	/**
-	 * log4j
-	 **/
-	private static Logger logger = Logger.getLogger(MapperProxy.class);
+	private static Logger logger = Logger.getLogger(MapperProxyHandler.class
+			.getName());
 
-	public MapperProxy(Executor executor,
+	public MapperProxyHandler(Executor executor,
 			Map<String, MapStatement> mapStatementsCache, Class<?> daoInterface) {
 		this.executor = executor;
 		this.mapStatementsCache = mapStatementsCache;
@@ -48,7 +46,7 @@ public class MapperProxy implements InvocationHandler {
 		String key = String.format("%s.%s", classnameOfMethod, nameOfMethod);
 		MapStatement mapStatement = mapStatementsCache.get(key);
 		if (mapStatement == null) {
-			logger.warn(String.format("没有查询到%s的MapStatment,动态生成", key));
+			logger.warning(String.format("没有查询到%s的MapStatment,动态生成", key));
 			DefaultScanner scanner = new DefaultScanner();
 			ResultMapConfig<?> resultMapConfig = scanner
 					.scanResultMapConfigOfMethod(method);

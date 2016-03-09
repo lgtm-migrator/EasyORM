@@ -1,7 +1,8 @@
 package org.suntao.easyorm.configuration;
 
 /**
- * mapper文件配置 存储文件的id以及位置
+ * mapper文件配置 存储文件的id以及位置 <br>
+ * 此配置废弃
  * 
  * @author suntao
  * 

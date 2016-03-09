@@ -12,7 +12,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.suntao.easyorm.configuration.DatabaseConfig;
-import org.suntao.easyorm.configuration.EasyormConfig;
 import org.suntao.easyorm.configuration.MapperConfig;
 import org.suntao.easyorm.configuration.XmlParse;
 import org.suntao.easyorm.map.MapStatement;
@@ -35,18 +34,6 @@ public class xmlparsetest {
 		factory.setValidating(true);
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		xmldoc = builder.parse(xmlpath);
-	}
-
-	@Test
-	public void test() {
-		EasyormConfig easyormConfig = XmlParse.configParse(xmlpath);
-		System.out.println("--------------DAO  config--------------");
-		System.out.println(String.format(
-				"DAO\t\tPATH:\t%s\nMAPPER\t\tPATH:\t%s\nDATABASE\tURL:\t%s",
-				easyormConfig.getDaoPath(), easyormConfig.getMapperXmlPath(),
-				easyormConfig.getDatabaseConfig().getJdbcurl()));
-		Assert.assertNotNull(easyormConfig);
-		System.out.println("----------------end--------------------");
 	}
 
 	@Test

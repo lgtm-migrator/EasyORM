@@ -19,17 +19,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Logger;
 
-import org.apache.log4j.Logger;
 import org.suntao.easyorm.annotation.Param;
 import org.suntao.easyorm.annotation.SQL;
 import org.suntao.easyorm.configuration.EasyormConfig;
-import org.suntao.easyorm.configuration.XmlParse;
 import org.suntao.easyorm.map.MapStatement;
 import org.suntao.easyorm.map.ResultMapConfig;
 import org.suntao.easyorm.map.ResultMappingType;
 import org.suntao.easyorm.scan.Scanner;
-import org.w3c.dom.Document;
 
 /**
  * 简化扫描器
@@ -44,7 +42,7 @@ public class DefaultScanner implements Scanner {
 	private String daoPath;
 	private Map<String, MapStatement> scannedMapStatment;
 	private Map<String, ResultMapConfig<?>> scannedResultMap;
-	private static Logger logger = Logger.getLogger(Scanner.class);
+	private static Logger logger = Logger.getLogger(Scanner.class.getName());
 
 	public DefaultScanner() {
 		super();
@@ -87,7 +85,7 @@ public class DefaultScanner implements Scanner {
 		Boolean result = false;
 		Map<String, MapStatement> scanedMapStatment = new HashMap<String, MapStatement>();
 		Map<String, ResultMapConfig<?>> scanedResultMap = new HashMap<String, ResultMapConfig<?>>();
-		logger.debug("开始对DAO接口的扫描,并存储为MapStatment和ResultMap");
+		logger.info("开始对DAO接口的扫描,并存储为MapStatment和ResultMap");
 		try {
 			for (Class<?> currentClass : daoClasses) {
 				for (Method currentMethod : currentClass.getDeclaredMethods()) {
@@ -106,12 +104,12 @@ public class DefaultScanner implements Scanner {
 			}
 			this.scannedResultMap = scanedResultMap;
 			this.scannedMapStatment = scanedMapStatment;
-			logger.debug(String.format(
+			logger.info(String.format(
 					"扫描完成,扫描的MapStatment的size为%d,ResultMap的size为:%d",
 					scanedMapStatment.size(), scanedResultMap.size()));
 			result = true;
 		} catch (Exception e) {
-			logger.error("由于各种原因扫描失败");
+			logger.severe("由于各种原因扫描失败");
 			e.printStackTrace();
 			result = false;
 		}
@@ -130,7 +128,7 @@ public class DefaultScanner implements Scanner {
 					daoClasses.add(c);
 				}
 			} catch (Exception e) {
-				logger.warn("根据package获取Class列表发生错误,Exception:"
+				logger.warning("根据package获取Class列表发生错误,Exception:"
 						+ e.getMessage());
 			}
 		}
@@ -213,25 +211,25 @@ public class DefaultScanner implements Scanner {
 					.getGenericReturnType();
 			Type[] types = parameterizedType.getActualTypeArguments();
 			if (types.length != 1) {
-				logger.error("List 参数过多过少");
+				logger.severe("List 参数过多过少");
 				// 如果List的参数过多或者过少= =,这应该不会发生
 				resultMappingType = ResultMappingType.OTHER;
 			}
 			try {
 				modelClass = Class.forName(types[0].getTypeName());
 			} catch (ClassNotFoundException e) {
-				logger.error(String.format("并没有%s这个类%s",
+				logger.severe(String.format("并没有%s这个类%s",
 						types[0].getTypeName(), e));
 			}
 			resultMappingType = ResultMappingType.MODELLIST;
 		} else if (returnClass.equals(Void.class)) {
-			logger.error("方法不应该定义空返回类型,如果只想执行语句的话,可以定义int返回");
+			logger.severe("方法不应该定义空返回类型,如果只想执行语句的话,可以定义int返回");
 			resultMappingType = ResultMappingType.OTHER;
 		} else if (!returnClass.isPrimitive()) {
 			modelClass = method.getReturnType();
 			resultMappingType = ResultMappingType.ONEMODEL;
 		} else {
-			logger.warn(String.format("当前类型不受到支持,%s", returnClass));
+			logger.warning(String.format("当前类型不受到支持,%s", returnClass));
 			resultMappingType = ResultMappingType.OTHER;
 		}
 		resultMap.setResultMapID(resultMapId);
@@ -330,7 +328,7 @@ public class DefaultScanner implements Scanner {
 															+ className));
 										} catch (ClassNotFoundException e) {
 											// log
-											// .error("添加用户自定义视图类错误 找不到此类的.class文件");
+											// .severe("添加用户自定义视图类错误 找不到此类的.class文件");
 											e.printStackTrace();
 										}
 									}
@@ -338,7 +336,7 @@ public class DefaultScanner implements Scanner {
 							}
 						}
 					} catch (IOException e) {
-						// log.error("在扫描用户定义视图时从jar包获取文件出错");
+						// log.severe("在扫描用户定义视图时从jar包获取文件出错");
 						e.printStackTrace();
 					}
 				}
@@ -373,6 +371,7 @@ public class DefaultScanner implements Scanner {
 		// 如果存在 就获取包下的所有文件 包括目录
 		File[] dirfiles = dir.listFiles(new FileFilter() {
 			// 自定义过滤规则 如果可以循环(包含子目录) 或则是以.class结尾的文件(编译好的java类文件)
+			@Override
 			public boolean accept(File file) {
 				return (recursive && file.isDirectory())
 						|| (file.getName().endsWith(".class"));
@@ -397,7 +396,7 @@ public class DefaultScanner implements Scanner {
 					classes.add(Thread.currentThread().getContextClassLoader()
 							.loadClass(packageName + '.' + className));
 				} catch (ClassNotFoundException e) {
-					// log.error("添加用户自定义视图类错误 找不到此类的.class文件");
+					// log.severe("添加用户自定义视图类错误 找不到此类的.class文件");
 					e.printStackTrace();
 				}
 			}

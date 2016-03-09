@@ -7,13 +7,12 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import javax.management.modelmbean.ModelMBean;
-import javax.net.ssl.SSLEngineResult.Status;
+import java.util.logging.Logger;
 
-import org.apache.log4j.Logger;
 import org.suntao.easyorm.annotation.DataBaseModel;
 import org.suntao.easyorm.configuration.DatabaseConfig;
 import org.suntao.easyorm.configuration.EasyormConfig;
+import org.suntao.easyorm.exceptions.ConnectionPoolException;
 import org.suntao.easyorm.exceptions.EasyormConfigException;
 import org.suntao.easyorm.executor.Executor;
 import org.suntao.easyorm.executor.defaults.DefaultExecutor;
@@ -59,10 +58,8 @@ public class DefaultSqlSession implements SqlSession {
 	 * JDBC解释器
 	 */
 	private Executor executor;
-	/**
-	 * log4j
-	 */
-	private static Logger logger = Logger.getLogger(SqlSession.class);
+
+	private static Logger logger = Logger.getLogger(SqlSession.class.getName());
 	/**
 	 * 连接池
 	 */
@@ -93,7 +90,7 @@ public class DefaultSqlSession implements SqlSession {
 			this.connectionPool = new ConnectionPool(databaseConfig,
 					easyormConfig.getPoolSize());
 		if (!check())// 如果检查失败
-			throw new EasyormConfigException();
+			throw new EasyormConfigException("对于EasyORM配置检查失败,请确认配置了数据库并且可以连接");
 	}
 
 	/**
@@ -110,6 +107,7 @@ public class DefaultSqlSession implements SqlSession {
 		try {
 			returnConnection(getConnection());
 		} catch (Exception e) {
+			result = false;
 			e.printStackTrace();
 		}
 		return result;
@@ -130,16 +128,16 @@ public class DefaultSqlSession implements SqlSession {
 			result = true;
 		else {
 			if (obj == null)
-				logger.warn("执行默认方法的条件检验失败,因为传入的对象是null");
+				logger.warning("执行默认方法的条件检验失败,因为传入的对象是null");
 			else {
-				logger.warn("没有DatabaseModel注解");
+				logger.warning("没有DatabaseModel注解");
 			}
 		}
 		return result;
 	}
 
 	@Override
-	public Integer deleteByPrimaryKey(Object obj) {
+	public Integer deleteByPrimaryKey(Object obj) throws SQLException {
 		Integer result = -1;
 		DataBaseModel dataBaseModel = null;
 		if (defaultSqlMethodParamCheck(obj)) {
@@ -177,7 +175,7 @@ public class DefaultSqlSession implements SqlSession {
 				executor.execute(willBeCachedMapStatement, param);
 			}
 		} else {
-			logger.error("执行本方法失败,参数为空或者没有DatabaseModel注解");
+			logger.severe("执行本方法失败,参数为空或者没有DatabaseModel注解");
 		}
 		return result;
 	}
@@ -186,7 +184,11 @@ public class DefaultSqlSession implements SqlSession {
 	public Connection getConnection() {
 		Connection result = null;
 		if ((isPooled && connectionPool != null)) {
-			result = connectionPool.getConnection();
+			try {
+				result = connectionPool.getConnection();
+			} catch (ConnectionPoolException e) {
+				e.printStackTrace();
+			}
 		} else {
 			try {
 				Class.forName(databaseConfig.getDriver());
@@ -207,12 +209,12 @@ public class DefaultSqlSession implements SqlSession {
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public <T> T getMapper(Class<T> mapperClass) {
-		logger.debug(String.format("尝试获取%s的代理", mapperClass));
+		logger.info(String.format("尝试获取%s的代理", mapperClass));
 		T result = null;
 		result = (T) MapperProxyBuilder.getMapperProxy(mapperClass,
 				this.executor, mapStatementCache);
 		if (result != null) {
-			logger.debug("代理获取成功");
+			logger.info("代理获取成功");
 		}
 		return result;
 	}
@@ -226,9 +228,10 @@ public class DefaultSqlSession implements SqlSession {
 	 * 
 	 * @param obj
 	 *            数据库实体
+	 * @throws SQLException
 	 */
 	@Override
-	public Integer insert(Object obj) {
+	public Integer insert(Object obj) throws SQLException {
 		Integer result = -1;
 		/**
 		 * 数据库实体注解
@@ -297,7 +300,7 @@ public class DefaultSqlSession implements SqlSession {
 					willBeCachedMapStatement.setStatementSQL(sql);
 					willBeCachedMapStatement
 							.setReturnType(ResultMappingType.INTEGER);
-					logger.debug("默认方法产生Sql语句为:" + sql);
+					logger.info("默认方法产生Sql语句为:" + sql);
 					// 缓存
 					mapStatementCache.put(willBeCachedMapStatement.getId(),
 							willBeCachedMapStatement);
@@ -306,7 +309,7 @@ public class DefaultSqlSession implements SqlSession {
 			}
 			result = (int) executor.execute(mapStatement, params);
 		} else {
-			logger.warn("请检查是否传入了null引用,请确认实体拥有DatabaseModel注解");
+			logger.warning("请检查是否传入了null引用,请确认实体拥有DatabaseModel注解");
 		}
 		return result;
 	}
@@ -314,7 +317,11 @@ public class DefaultSqlSession implements SqlSession {
 	@Override
 	public void returnConnection(Connection conn) {
 		if (isPooled) {
-			connectionPool.returnConnection(conn);
+			try {
+				connectionPool.returnConnection(conn);
+			} catch (ConnectionPoolException e) {
+				e.printStackTrace();
+			}
 		} else {
 			try {
 				conn.close();
@@ -328,7 +335,7 @@ public class DefaultSqlSession implements SqlSession {
 	}
 
 	@Override
-	public <T> List<T> selectALL(Class<T> modelClass) {
+	public <T> List<T> selectALL(Class<T> modelClass) throws SQLException {
 		List<T> result = null;
 		if (modelClass != null
 				&& modelClass.getAnnotation(DataBaseModel.class) != null) {
@@ -338,7 +345,7 @@ public class DefaultSqlSession implements SqlSession {
 			String key = modelClass.getName() + ".selectAll";
 			MapStatement mapStatement = mapStatementCache.get(key);
 			if (mapStatement == null) {
-				logger.debug("缓存中不存在" + key + "的MapStatement,动态生成并缓存");
+				logger.info("缓存中不存在" + key + "的MapStatement,动态生成并缓存");
 				String sqlStr = "select * from " + tableName;
 				MapStatement willBeCachedMapStatement = new MapStatement();
 				willBeCachedMapStatement.setStatementSQL(sqlStr);
@@ -350,14 +357,14 @@ public class DefaultSqlSession implements SqlSession {
 			}
 			result = (List<T>) executor.execute(mapStatement, null);
 		} else {
-			logger.error("请确认传入的参数不为null,并且有DatabaseModel注解");
+			logger.severe("请确认传入的参数不为null,并且有DatabaseModel注解");
 		}
 
 		return result;
 	}
 
 	@Override
-	public <T> T selectByPrimaryKey(T obj) {
+	public <T> T selectByPrimaryKey(T obj) throws SQLException {
 		T result = null;
 		DataBaseModel dataBaseModel = null;
 		if (defaultSqlMethodParamCheck(obj)) {
@@ -394,13 +401,13 @@ public class DefaultSqlSession implements SqlSession {
 			}
 			result = (T) executor.execute(mapStatement, params);
 		} else {
-			logger.error("执行本方法失败,参数为空或者没有DatabaseModel注解");
+			logger.severe("执行本方法失败,参数为空或者没有DatabaseModel注解");
 		}
 		return result;
 	}
 
 	@Override
-	public Integer updateByPrimaryKey(Object obj) {
+	public Integer updateByPrimaryKey(Object obj) throws SQLException {
 		int result = -1;
 		DataBaseModel dataBaseModel = null;
 		if (defaultSqlMethodParamCheck(obj)) {
@@ -446,10 +453,10 @@ public class DefaultSqlSession implements SqlSession {
 				mapStatement = willBeCachedMapStatement;
 			}
 			result = (int) executor.execute(mapStatement, params);
-			logger.debug("执行语句" + sqlStr);
+			logger.info("执行语句" + sqlStr);
 
 		} else {
-			logger.error("执行本方法失败,参数为空或者没有DatabaseModel注解");
+			logger.severe("执行本方法失败,参数为空或者没有DatabaseModel注解");
 		}
 		return result;
 	}

@@ -1,5 +1,6 @@
 package org.suntao.easyorm.fulltest;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import org.junit.After;
@@ -31,8 +32,14 @@ public class fullTest {
 
 	@Test
 	public void testList() {
-		List<courseinfo> cs = sqlSession.selectALL(courseinfo.class);
-		for(courseinfo c:cs){
+		List<courseinfo> cs = null;
+		try {
+			cs = sqlSession.selectALL(courseinfo.class);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		for (courseinfo c : cs) {
 			System.out.println(c);
 		}
 	}

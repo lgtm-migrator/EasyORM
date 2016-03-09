@@ -1,26 +1,15 @@
 package org.suntao.easyorm.configuration;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
 import org.suntao.easyorm.map.MapStatement;
-import org.suntao.easyorm.map.ResultMapConfig;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -29,7 +18,8 @@ import org.xml.sax.SAXException;
 /**
  * xml配置读取
  * <p>
- * 包含从xml文件中读取配置的各种方法
+ * 包含从xml文件中读取配置的各种方法<br>
+ * 由于本版本放弃通过XML配置的方案,此类暂时废弃
  * 
  * @author suntao
  * 
@@ -64,10 +54,8 @@ public class XmlParse {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document xmlDoc = builder.parse(xml);
 			result.setDatabaseConfig(parseDataBaseConfig(xmlDoc));// 获取database配置实体
-			result.setMapperConfigs(parseMappersConfig(xmlDoc));// 获取mapper位置配置实体
 			Map<String, String> daoMap = parseDAOandMapperXmlConfig(xmlDoc);// 获取dao相关配置
 			result.setDaoPath(daoMap.get("daojavapath"));
-			result.setMapperXmlPath(daoMap.get("mapperxmlpath"));
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 		} catch (SAXException e) {

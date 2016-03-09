@@ -1,8 +1,5 @@
 package org.suntao.easyorm.configuration;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * easyorm配置
  * <p>
@@ -12,79 +9,55 @@ import java.util.Map;
  * 
  */
 public class EasyormConfig {
-	/**
-	 * 连接池大小
-	 */
-	private int poolSize;
-	/**
-	 * 是否使用连接池
-	 */
-	private boolean isPooled = false;
-
+	public static int DEFAULT_POOL_SIZE = 10;
 	/**
 	 * DAO接口文件包位置
 	 */
 	private String daoPath;
-
 	/**
 	 * 数据库配置
 	 */
 	private DatabaseConfig databaseConfig;
 
 	/**
-	 * mapper位置配置
+	 * 是否使用连接池
 	 */
-	private Map<String, MapperConfig> mapperConfigs;
+	private boolean isPooled = false;
+
 	/**
-	 * mapper xml文件包位置
+	 * 连接池大小
 	 */
-	private String mapperXmlPath;
+	private int poolSize;
 
 	public EasyormConfig() {
 		this.databaseConfig = new DatabaseConfig();
-		this.mapperConfigs = new HashMap<String, MapperConfig>();
 		this.daoPath = null;
 		this.isPooled = false;
+		this.poolSize = DEFAULT_POOL_SIZE;
 	}
 
-	/**
-	 * EasyORM主配置文件
-	 * 
-	 * @param databaseConfig
-	 *            数据库配置
-	 * @param mapperConfigs
-	 *            mapper位置配置
-	 */
-	public EasyormConfig(DatabaseConfig databaseConfig,
-			Map<String, MapperConfig> mapperConfigs) {
-		super();
+	public EasyormConfig(DatabaseConfig databaseConfig, boolean isPooled) {
+		this();
 		this.databaseConfig = databaseConfig;
-		this.mapperConfigs = mapperConfigs;
+		this.isPooled = isPooled;
 	}
 
 	public EasyormConfig(DatabaseConfig databaseConfig, boolean pooled,
 			int pooledsize) {
-		this(pooledsize, pooled, null, databaseConfig, null, null);
+		this(databaseConfig, pooled, pooledsize, null);
 	}
 
-	public EasyormConfig(DatabaseConfig databaseConfig, boolean pooled) {
-		this(10, pooled, null, databaseConfig, null, null);
-	}
-
-	public EasyormConfig(int poolSize, boolean isPooled, String daoPath,
-			DatabaseConfig databaseConfig,
-			Map<String, MapperConfig> mapperConfigs, String mapperXmlPath) {
-		super();
-		this.poolSize = poolSize;
-		this.isPooled = isPooled;
-		this.daoPath = daoPath;
+	public EasyormConfig(DatabaseConfig databaseConfig, boolean isPooled,
+			int poolSize, String daoPath) {
+		this();
 		this.databaseConfig = databaseConfig;
-		this.mapperConfigs = mapperConfigs;
-		this.mapperXmlPath = mapperXmlPath;
+		this.isPooled = isPooled;
+		this.poolSize = poolSize;
+		this.daoPath = daoPath;
 	}
 
 	public EasyormConfig(String daoPath, DatabaseConfig databaseConfig) {
-		super();
+		this();
 		this.daoPath = daoPath;
 		this.databaseConfig = databaseConfig;
 	}
@@ -101,12 +74,12 @@ public class EasyormConfig {
 		return databaseConfig;
 	}
 
-	public Map<String, MapperConfig> getMapperConfigs() {
-		return mapperConfigs;
+	public int getPoolSize() {
+		return poolSize;
 	}
 
-	public String getMapperXmlPath() {
-		return mapperXmlPath;
+	public boolean isPooled() {
+		return isPooled;
 	}
 
 	public void setDaoPath(String daoPath) {
@@ -121,12 +94,8 @@ public class EasyormConfig {
 		this.databaseConfig = dbConfig;
 	}
 
-	public void setMapperConfigs(Map<String, MapperConfig> mapConfigs) {
-		this.mapperConfigs = mapConfigs;
-	}
-
-	public void setMapperXmlPath(String mapperXmlPath) {
-		this.mapperXmlPath = mapperXmlPath;
+	public void setPoolSize(int poolSize) {
+		this.poolSize = poolSize;
 	}
 
 	@Override
@@ -134,28 +103,11 @@ public class EasyormConfig {
 		String result = null;
 		result = String.format(
 				"DaoPath:%s DBConfig:%s mapperConfigs:%s XmlsPath:%s", daoPath,
-				databaseConfig, mapperConfigs, mapperXmlPath);
+				databaseConfig);
 		return result;
 	}
 
-	public int getPoolSize() {
-		return poolSize;
-	}
-
-	public void setPoolSize(int poolSize) {
-		this.poolSize = poolSize;
-	}
-
-	public boolean isPooled() {
-		return isPooled;
-	}
-
-	/**
-	 * 是否池化
-	 * 
-	 * @param isPooled
-	 */
-	public void pooled(boolean isPooled) {
+	public void setPooled(boolean isPooled) {
 		this.isPooled = isPooled;
 	}
 
