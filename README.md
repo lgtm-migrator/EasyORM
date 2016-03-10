@@ -21,13 +21,15 @@ MethodReturnType result=mapper.sqlname(param); //完成一次查询
 
 ## 思路简记
 * 如果不使用连接池,SqlSession中并不建立连接,只有调用getConnection()时才建立连接,如果使用连接池,getConnection从连接池中取连接
-* 代理调用Executor 
-* DefaultExecutor中调用相应的反射方法,完成从行到实体的映射
-* 将mapstatement传入executor,然后executor通过preparedstatment执行sql语句
+* ProxyHandler调用Executor 
+* 将mapstatement传入executor,然后executor通过preparedstatment执行sql语句,获取ResultSet
+* DefaultExecutor中调用ResultMapping的方法,完成从行到实体的映射
 * 在创建SqlSession时,扫描xml,注解,以及接口方法的返回类型,存储为相应配置实体.
 * 在openSession()后,扫描一次接口和xml配置文件
-* 当调用DAO接口中的方法,而SqlSession中找不到对应的MapStatement时,会调用Scanner扫描该方法并存储到MapStatment
-* 无论是调用默认方法,还是自己定义方法,最终都是交由DefaultExecuto来执行
+* 当调用DAO接口中的方法,而SqlSession中找不到对应的MapStatement时,会调用Scanner扫描并缓存
+* 当需要获取一个实体的所有域的时候,会先从SqlSession中的modelFieldsCache中查找,如果没有,会扫描并缓存
+* 当需要获取一个代理的时候,会先在MapperProxyBuilder中的proxyCache中查找,如果没有,会先创建并缓存
+* 无论是调用默认方法,还是调用DAO,最终都是交由DefaultExecutor来执行
 
 ## TO DO
 * ~~XML解析的时候,出错需要提示某一些字符需要转义~~
