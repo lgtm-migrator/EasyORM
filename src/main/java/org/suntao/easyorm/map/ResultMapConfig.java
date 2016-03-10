@@ -65,11 +65,13 @@ public class ResultMapConfig<T> {
 			String resultMapID, ResultMappingType resultType) {
 		super();
 		this.modelClass = modelClass;
-		this.properties = properties;
-		this.resultMapID = resultMapID;
-		this.resultType = resultType;
 		if (properties == null)
 			properties = new HashMap<String, String>();
+		else
+			this.properties = properties;
+		this.resultMapID = resultMapID;
+		this.resultType = resultType;
+
 	}
 
 	public void addProperty(String nameOfModel, String nameOfColumn) {
@@ -80,9 +82,18 @@ public class ResultMapConfig<T> {
 		String result = null;
 		result = String.format(
 				"ID:%s\nMODELNAME:%s\nRESULTTYPE:%s\nPROPERTIESNUMBER:%d",
-				getResultMapID(), getModelClass(), getResultType()
-						.name(), getProperties().size());
+				getResultMapID(), getModelClass(), getResultType().name(),
+				getProperties().size());
+		if (resultType.equals(ResultMappingType.OTHER)) {
+			result += "\n请注意当前的ResultMapConfig所对应方法的返回类型不被支持,请检查\n"
+					+ "通常情况下使用int,boolean和List是被允许的,而void返回类型是不可以的";
+		}
 		return result;
+	}
+
+	@Override
+	public String toString() {
+		return getInfoStr();
 	}
 
 	public Class<T> getModelClass() {

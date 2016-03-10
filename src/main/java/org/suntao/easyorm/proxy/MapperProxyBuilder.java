@@ -31,17 +31,20 @@ public class MapperProxyBuilder {
 	public static <T> Object getMapperProxy(Class<T> mapperClass,
 			Executor executor, Map<String, MapStatement> mapStatments) {
 		Object result = null;
-		Object cachedProxy = proxyCache.get(mapperClass.getName());
-		if (cachedProxy == null) {
-			result = Proxy.newProxyInstance(mapperClass.getClassLoader(),
+		// 暂存代理对象
+		Object tempProxy = proxyCache.get(mapperClass.getName());
+		if (proxyCache.containsKey(mapperClass.getName())) {
+			tempProxy = proxyCache.get(mapperClass);
+		} else {
+			logger.info(String.format("代理缓存中不存在%s的代理,动态创建并缓存",
+					mapperClass.getName()));
+			tempProxy = Proxy.newProxyInstance(mapperClass.getClassLoader(),
 					new Class[] { mapperClass }, new MapperProxyHandler(
 							executor, mapStatments, mapperClass));
-			proxyCache.put(mapperClass.getName(), result);
-			logger.info(String.format("代理缓存中不存在%s的代理,动态创建并缓存", mapperClass));
-		} else {
-			result = cachedProxy;
-			logger.info(String.format("成功从缓存中获取代理", cachedProxy));
+			proxyCache.put(mapperClass.getName(), tempProxy);
+			result = tempProxy;
 		}
 		return result;
 	}
+
 }

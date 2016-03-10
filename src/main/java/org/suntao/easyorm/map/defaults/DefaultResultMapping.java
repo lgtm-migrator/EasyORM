@@ -6,19 +6,23 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.suntao.easyorm.map.ResultMapConfig;
 import org.suntao.easyorm.map.ResultMapping;
 import org.suntao.easyorm.map.ResultMappingType;
+import org.suntao.easyorm.utils.Utils;
 
 /**
  * 简化结果集映射器
  * <p>
- * 最简单的结果映射<br>
+ * 简单的结果映射<br>
  * 通过反射,遍历实体属性,在resultset中查找同名的列并赋值<br>
- * 不对实体父类的属性进行映射
+ * 不对实体父类的属性进行映射<br>
+ * 在(不久的)未来会加入用户自定义类型的映射
  * 
  * @author suntao
  *
@@ -26,6 +30,16 @@ import org.suntao.easyorm.map.ResultMappingType;
 public class DefaultResultMapping implements ResultMapping {
 	private static Logger logger = Logger.getLogger(ResultMapping.class
 			.getName());
+	private Map<String, Field[]> cachedClassesFields;
+
+	public DefaultResultMapping() {
+		this.cachedClassesFields = new HashMap<String, Field[]>();
+	}
+
+	public DefaultResultMapping(Map<String, Field[]> cachedClassFields) {
+		super();
+		this.cachedClassesFields = cachedClassFields;
+	}
 
 	@Override
 	public Boolean getBoolean(ResultMapConfig<?> resultMap, ResultSet resultSet) {
@@ -77,10 +91,14 @@ public class DefaultResultMapping implements ResultMapping {
 	public <T> T getModel(ResultMapConfig<T> resultMap, ResultSet resultSet)
 			throws InstantiationException {
 		Object result = null;
+		Class<?> resultClass = null;
+		String resultClassName = null;
 		try {
 			// 动态构造实体
 			result = Class.forName(resultMap.getModelClass().getName())
 					.newInstance();
+			resultClass = result.getClass();
+			resultClassName = resultClass.getName();
 		} catch (InstantiationException e) {
 			// 如果该实体没有相应无参构造方法 提示并返回null
 			logger.severe("请为实体: " + resultMap.getModelClass().getName()
@@ -92,8 +110,9 @@ public class DefaultResultMapping implements ResultMapping {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-		// 获取实体的各个字段(域)/field(不包含父类)
-		Field[] fields = result.getClass().getDeclaredFields();
+		// 从缓存中获取所有域(如果没有将先缓存)
+		Field[] fields = Utils.getFieldFromCache(cachedClassesFields,
+				resultClass);
 		// 遍历
 		for (Field f : fields) {
 			// 使该域可写
@@ -118,6 +137,7 @@ public class DefaultResultMapping implements ResultMapping {
 				else if (type.equals(BigDecimal.class))
 					value = resultSet.getBigDecimal(fieldName);
 				else {
+					// TO DO 对其它对象进行映射
 					logger.warning(String.format("没有Type{%s}的相应处理方式",
 							type.toString()));
 					continue;
@@ -171,7 +191,8 @@ public class DefaultResultMapping implements ResultMapping {
 				}
 				break;
 			case OTHER:
-				logger.warning("不可映射这种类型,返回null");
+				logger.warning("不可映射这种类型,请检查ResultMapConfig,返回null");
+				logger.warning(resultMap.toString());
 				result = null;
 				break;
 			default:

@@ -12,7 +12,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.suntao.easyorm.configuration.DatabaseConfig;
-import org.suntao.easyorm.configuration.MapperConfig;
 import org.suntao.easyorm.configuration.XmlParse;
 import org.suntao.easyorm.map.MapStatement;
 import org.w3c.dom.Document;
@@ -41,21 +40,6 @@ public class xmlparsetest {
 		DatabaseConfig databaseConfig = XmlParse.parseDataBaseConfig(xmldoc);
 		System.out.println(databaseConfig.getInfoStr());
 		Assert.assertNotNull(databaseConfig);
-	}
-
-	@Test
-	public void testMapperConfigParse() {
-		Map<String, MapperConfig> mapperconfigmap = XmlParse
-				.parseMappersConfig(xmldoc);
-		System.out.println("------------mapper config--------------");
-		Set keys = mapperconfigmap.keySet();
-		MapperConfig mapperConfig;
-		Iterator<String> it = keys.iterator();
-		while (it.hasNext()) {
-			mapperConfig = mapperconfigmap.get(it.next());
-			System.out.println(mapperConfig.getInfoStr());
-		}
-		System.out.println("-----------------end-------------------");
 	}
 
 	@Test

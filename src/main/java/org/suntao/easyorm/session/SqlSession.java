@@ -50,7 +50,7 @@ public interface SqlSession {
 	 * @param obj
 	 *            实体
 	 * @return 影响条数
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
 	Integer updateByPrimaryKey(Object obj) throws SQLException;
 
@@ -62,7 +62,7 @@ public interface SqlSession {
 	 * 
 	 * @param obj
 	 * @return
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
 	Integer insert(Object obj) throws SQLException;
 
@@ -77,7 +77,7 @@ public interface SqlSession {
 	 * @param obj
 	 * @return 影响条数<br>
 	 *         正常执行流程的结果>=0
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
 	Integer deleteByPrimaryKey(Object obj) throws SQLException;
 
@@ -90,7 +90,7 @@ public interface SqlSession {
 	 *            对象<br>
 	 *            该对象主键字段应该被填充
 	 * @return 对象所对应的实体
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
 	<T> T selectByPrimaryKey(T obj) throws SQLException;
 
@@ -100,12 +100,13 @@ public interface SqlSession {
 	 * @param modelClass
 	 *            数据库实体的类
 	 * @return 数据库实体列表
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
 	<T> List<T> selectALL(Class<T> modelClass) throws SQLException;
 
 	/**
-	 * 摧毁这个SqlSession
+	 * 对整个SqlSession进行释放<br>
+	 * 将清空所有缓存
 	 */
 	void destroy();
 }

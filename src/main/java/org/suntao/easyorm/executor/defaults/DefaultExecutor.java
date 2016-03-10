@@ -119,7 +119,7 @@ public class DefaultExecutor implements Executor {
 						logger.info("查询返回整型值," + result);
 						break;
 					default:
-						logger.warning("请注意非select SQL仅可使用int和boolean两种返回类型");
+						logger.warning("请注意,非select SQL仅可使用int和boolean两种返回类型");
 						result = null;
 						break;
 					}

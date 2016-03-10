@@ -1,5 +1,5 @@
 /**
- * This packege used to be thrown
+ * Exception包
  */
 /**
  * @author  suntao

@@ -4,9 +4,9 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import java.util.logging.Logger;
 
 import org.suntao.easyorm.annotation.DataBaseModel;
@@ -26,6 +26,7 @@ import org.suntao.easyorm.proxy.MapperProxyBuilder;
 import org.suntao.easyorm.scan.Scanner;
 import org.suntao.easyorm.scan.defaults.DefaultScanner;
 import org.suntao.easyorm.session.SqlSession;
+import org.suntao.easyorm.utils.Utils;
 
 /**
  * SqlSession实现
@@ -64,6 +65,12 @@ public class DefaultSqlSession implements SqlSession {
 	 * 连接池
 	 */
 	private ConnectionPool connectionPool;
+	/**
+	 * 缓存的实体域对象<br>
+	 * Key=ClassName<br>
+	 * Value=Class.getDeclaredFields
+	 */
+	private Map<String, Field[]> modelFieldsCache;
 
 	private boolean isPooled = false;
 
@@ -80,12 +87,16 @@ public class DefaultSqlSession implements SqlSession {
 			throws EasyormConfigException {
 		this.easyormConfig = easyormConfig;
 		this.databaseConfig = easyormConfig.getDatabaseConfig();
-		this.resultMapping = new DefaultResultMapping();
+		this.mapStatementCache = new HashMap<String, MapStatement>();
+		this.modelFieldsCache = new HashMap<String, Field[]>();
+		this.resultMapping = new DefaultResultMapping(modelFieldsCache);
 		this.executor = new DefaultExecutor(this, this.resultMapping);
-		this.scanner = new DefaultScanner(easyormConfig);
 		this.isPooled = easyormConfig.isPooled();
-		scanner.scan();
-		this.mapStatementCache = scanner.getScannedMapStatement();
+		this.scanner = new DefaultScanner(easyormConfig);
+		if (easyormConfig.getDaoPath() != null) {
+			scanner.scan();
+			this.mapStatementCache = scanner.getScannedMapStatement();
+		}
 		if (isPooled)
 			this.connectionPool = new ConnectionPool(databaseConfig,
 					easyormConfig.getPoolSize());
@@ -197,9 +208,12 @@ public class DefaultSqlSession implements SqlSession {
 						databaseConfig.getUsername(),
 						databaseConfig.getPassword());
 			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
 				System.exit(1);
 			} catch (SQLException e) {
+				e.printStackTrace();
 			} catch (NullPointerException e) {
+				e.printStackTrace();
 				System.exit(1);
 			}
 		}
@@ -246,7 +260,8 @@ public class DefaultSqlSession implements SqlSession {
 			// 查询是否有相应MapStatement
 			MapStatement mapStatement = mapStatementCache.get(key);
 			// 对象所有域
-			Field[] fields = obj.getClass().getDeclaredFields();
+			Field[] fields = Utils.getFieldFromCache(modelFieldsCache,
+					obj.getClass());
 			// Executor使用的参数
 			Object[] params = new Object[fields.length];
 			annoConfig = obj.getClass().getAnnotation(DataBaseModel.class);
@@ -420,7 +435,8 @@ public class DefaultSqlSession implements SqlSession {
 			String sqlStr = "update " + tableName + " set ";
 			MapStatement mapStatement = mapStatementCache.get(key);
 			Object[] params = null;
-			Field[] fields = obj.getClass().getDeclaredFields();
+			Field[] fields = Utils.getFieldFromCache(modelFieldsCache,
+					objClass);
 			params = new Object[fields.length];
 			int index = 0;
 			try {
@@ -465,14 +481,11 @@ public class DefaultSqlSession implements SqlSession {
 	public void destroy() {
 		if (isPooled && this.connectionPool != null)
 			this.connectionPool.releasePool();
+		this.modelFieldsCache.clear();
+		this.mapStatementCache.clear();
 		this.databaseConfig = null;
 		this.easyormConfig = null;
 		this.executor = null;
-		for (String k : this.mapStatementCache.keySet()) {
-			Object o = this.mapStatementCache.get(k);
-			o = null;
-			k = null;
-		}
 		this.scanner = null;
 		this.resultMapping = null;
 		System.gc();

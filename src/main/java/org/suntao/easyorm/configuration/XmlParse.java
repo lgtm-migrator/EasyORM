@@ -4,11 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.log4j.Logger;
 import org.suntao.easyorm.map.MapStatement;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -26,7 +27,7 @@ import org.xml.sax.SAXException;
  */
 public class XmlParse {
 
-	private static Logger logger = Logger.getLogger(XmlParse.class);
+	private static Logger logger = Logger.getLogger(XmlParse.class.getName());
 
 	/**
 	 * 配置文件格式化
@@ -39,7 +40,7 @@ public class XmlParse {
 	 * @return easyorm配置实体
 	 */
 	public static EasyormConfig configParse(File xml) {
-		logger.debug(String.format("开始从file:%s扫描easyormconfig实体", xml.getName()));
+		logger.info(String.format("开始从file:%s扫描easyormconfig实体", xml.getName()));
 		EasyormConfig result = new EasyormConfig();
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setValidating(true);// 设定验证dtd
@@ -61,10 +62,10 @@ public class XmlParse {
 		} catch (SAXException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
-			logger.error("输入输出错误,请检查文件是否存在");
+			logger.severe("输入输出错误,请检查文件是否存在");
 			e.printStackTrace();
 		}
-		logger.debug("EasyORMConfig实体扫描完成");
+		logger.info("EasyORMConfig实体扫描完成");
 		return result;
 	}
 
@@ -149,7 +150,7 @@ public class XmlParse {
 			result.put("daojavapath", daojavapath);
 			result.put("mapperxmlpath", mapperxmlpath);
 		}
-		logger.debug(String.format(
+		logger.info(String.format(
 				"dao和mapper,xml的地址扫描完成,Dao Path:%s,Xml Path:%s", daojavapath,
 				mapperxmlpath));
 		return result;
@@ -176,43 +177,7 @@ public class XmlParse {
 				result.set(child.getNodeName(), child.getTextContent());
 			}
 		}
-		logger.debug("数据库配置扫描完成");
-		return result;
-	}
-
-	/**
-	 * 读取mapper的位置信息
-	 * <p>
-	 * 从easyorm配置文件Document<br>
-	 * 读取mapper文件的id和位置
-	 * 
-	 * @param doc
-	 *            Document
-	 * @return 存有mappers配置的Map
-	 */
-	public static Map<String, MapperConfig> parseMappersConfig(Document doc) {
-		Map<String, MapperConfig> result = new HashMap<String, MapperConfig>();
-		NodeList mappersnode = doc.getElementsByTagName("mapper");
-		for (int i = 0; i < mappersnode.getLength(); i++) {
-			Element mapperElement = (Element) mappersnode.item(i);
-			String id = mapperElement.getAttribute("id");
-			String location = mapperElement.getAttribute("location");
-			result.put(id, new MapperConfig(id, location));
-		}
-		return result;
-	}
-
-	/**
-	 * 解析docment中mapstatment配置
-	 * <p>
-	 * 针对一个xml文件将配置转化成mapstatment实体
-	 * 
-	 * @param doc
-	 * @return
-	 */
-	public static Map<String, MapStatement> parseMapStatment(Document doc) {
-		Map<String, MapStatement> result = new HashMap<String, MapStatement>();
-		// TO DO
+		logger.info("数据库配置扫描完成");
 		return result;
 	}
 

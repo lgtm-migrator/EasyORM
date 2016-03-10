@@ -46,7 +46,7 @@ public class MapperProxyHandler implements InvocationHandler {
 		String key = String.format("%s.%s", classnameOfMethod, nameOfMethod);
 		MapStatement mapStatement = mapStatementsCache.get(key);
 		if (mapStatement == null) {
-			logger.warning(String.format("没有查询到%s的MapStatment,动态生成", key));
+			logger.info(String.format("没有查询到%s的MapStatment,动态生成", key));
 			DefaultScanner scanner = new DefaultScanner();
 			ResultMapConfig<?> resultMapConfig = scanner
 					.scanResultMapConfigOfMethod(method);

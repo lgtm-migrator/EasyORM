@@ -31,6 +31,7 @@ public interface Scanner {
 	Map<String, MapStatement> getScannedMapStatement();
 
 	/**
+	 * 根据Dao包名进行扫描<br>
 	 * 完成整个扫描并将信息存储在实体中
 	 * 
 	 * @return 是否成功

@@ -5,18 +5,19 @@
 * 如果有相关的改进建议,或者发现了Bug,请联系我
 
 ## 简明使用方式
-* 本项目依赖于log4j,使用时需要将log4j(1.2.17以上版本)添加到Referenced Libraries,以及JDBCDriver和EasyORM本身,即,一个可用的基于EasyORM框架的项目至少需要3个库
-* 编写需要映射的实体,实体属性的名字需要和数据库记录的列名一致(不要求大小写)
-* 编写DAO接口,使用@SQL注解定义sql语句,SQL语句中的参数以?代替,**请注意,方法的参数顺序和sql语句中的?符号顺序需要一一对应**,返回类型可以为List,Boolean,Integer,或者是你自己定义的实体类.**请注意不要编写返回类型为void的方法**	
-* 编写程序,创建SqlSessionFactory,现在推荐使用`DefaultSqlSessionFactory(String JDBCDriver, String url,
-			String username, String passwd)`构造方法创建factory,xml配置文件的使用文档还在编写过程中
-***
-* SqlSessionFactory sessionFactory = new DefaultSqlSessionFactory(
+一个可用的基于EasyORM项目,需要JDBC Driver和EasyORM jar
+编写需要映射的实体,实体属性的名字需要和数据库记录的列名一致(不要求大小写)
+编写DAO接口,使用@SQL注解定义sql语句,SQL语句中的参数以?代替,**请注意,方法的参数顺序和sql语句中的?符号顺序需要一一对应**,返回类型可以为List,Boolean,Integer,或者是你自己定义的实体类.**请注意不要编写返回类型为void的方法**	
+编写程序,创建SqlSessionFactory
+使用factory.openSession创建SqlSession,使用SqlSession进行数据操作
+<BLOCKQUOTE>//源码示例
+SqlSessionFactory factory = new DefaultSqlSessionFactory(
 				driver, url, username, password); //创建factory
-* SqlSession sqlSession=factory.openSession(); //创建SqlSession
-* daoInterface mapper=sqlSession.getMapper(daointerface.class); //获取代理对象
-* MethodReturnType result=mapper.sqlname(param); //完成一次查询
-
+SqlSession sqlSession=factory.openSession(); //创建SqlSession
+daoInterface mapper=sqlSession.getMapper(daointerface.class); //获取代理对象
+MethodReturnType result=mapper.sqlname(param); //完成一次查询
+</BLOCKQUOTE>
+也可以直接调用SqlSession的默认方法,但注意传入的实体一定要使用DatabaseModel注解
 
 ## 思路简记
 * 如果不使用连接池,SqlSession中并不建立连接,只有调用getConnection()时才建立连接,如果使用连接池,getConnection从连接池中取连接
@@ -26,6 +27,7 @@
 * 在创建SqlSession时,扫描xml,注解,以及接口方法的返回类型,存储为相应配置实体.
 * 在openSession()后,扫描一次接口和xml配置文件
 * 当调用DAO接口中的方法,而SqlSession中找不到对应的MapStatement时,会调用Scanner扫描该方法并存储到MapStatment
+* 无论是调用默认方法,还是自己定义方法,最终都是交由DefaultExecuto来执行
 
 ## TO DO
 * ~~XML解析的时候,出错需要提示某一些字符需要转义~~
@@ -42,7 +44,7 @@
 
 	`代理调用解释器,解释器调用结果映射器`
 
-* 需要设计一个功能,将相应的mapstatement,转化成可用的sql语句或者preparedstatment可用的形式
+* ~~需要设计一个功能,将相应的mapstatement,转化成可用的sql语句或者preparedstatment可用的形式~~
 
 	`在使用preparedStatement时这个功能价值并不大,可是也方便用于调试`
 
@@ -60,7 +62,7 @@
 
 	`参数位置存储在mapstatment中,参数本身在运行的时候传递给executor`
 
-* 需要确定反射是否可以获取方法真正的参数名而不是argN
+* ~~需要确定反射是否可以获取方法真正的参数名而不是argN~~
 
 	`暂时没有想到方法,待以后扩展`
 	`已经确认反射无法获取方法的参数名`
@@ -74,7 +76,7 @@
 
 	`需要对参数进行封装,以使用实体的属性查询`
 
-* 现在使用SqlSession中的returnConnection关闭连接,之后需要设计一个连接管理器ConnectionManager
+* ~~现在使用SqlSession中的returnConnection关闭连接,之后需要设计一个连接管理器ConnectionManager~~
 
 	`可以将连接池集成在连接管理器中`
 
@@ -85,7 +87,7 @@
 
 * ~~需要确定是否可以让DefaultSqlSession持有一个Connection~~
 
-    `决定让连接池来完成此功能`
+    `DefaultSqlSession在非池化的情况下,将不持有连接`
     
 * ~~需要对代理进行缓存以提高性能,避免每次getMapper(somedaointerface)创建新代理~~
 
@@ -102,24 +104,29 @@
 
 * ~~需要对DefaultExecutor添加几个默认的方法,支持save,update,delete等方法~~
 
-* 需要确认是否可以用AOP,取代log4j进行调试
+* ~~需要确认是否可以用AOP,取代log4j进行调试~~
+	`使用Java原生Log替代log4j`
 * ~~准备剥离关于XML文件的处理部分~~
-* 需要删除不必要的代码部分,以提升可读性
+* ~~需要删除不必要的代码部分,以提升可读性~~
 * ~~需要对默认方法抛出SQL Exception,如果可以抛出相关语句~~
-* 需要将默认的logger提示方式改为Java自带的log
-* 需要将某些log改为抛出Exception
-
+* ~~需要将默认的logger提示方式改为Java自带的log~~
+* ~~需要将某些log改为抛出Exception~~
+* ~~将一个实体的Field找一个地方缓存~~
+    `为了唯一,不能放在MapStatement和ResultMapConfig里面`
+    `在结果映射中添加了针对域的缓存`
+    `缓存放在SqlSession中,其它地方使用引用访问`
+* 进行结果映射的时候,如若发现有用户自定义的类,需要进行扫描(缓存),并递归进行填充
 
 ## 知识储备
-* log4j
+* ~~log4j~~ 已从项目移除
 * Exception
 * 注解
 * 泛型
 * JDBC,PreparedStatement
-* Class 类加载器
+* Class,类加载器
 * 反射,Reflection
 * 动态代理,Proxy
-* XML解析,DTD,XML Schema
+* ~~XML解析,DTD,XML Schema~~ 已从项目移除
 
 ## 更新日志
 * 2016年2月11日 第一次整合测试完成
@@ -129,9 +136,10 @@
 * 2016年2月15日 优化Executor执行流程/添加mapper dtd
 * 2016年2月18日 添加连接池并持续测试可靠性(预计需要一周时间)
 * 2016年2月21-24日 为SqlSession添加几个默认方法
-* 2016年2月25日 各种更名
+* 2016年2月25日 各种更名,提高可读性
 * 2016年3月8日 整合连接池,移除XML配置
 * 2016年3月9日 移除log4j,使用Java原生的Logger
+* 2016年3月10日 添加对Field[]的缓存
 
 ## LICENSE
 [UNDER THE APACHE LICENSE VERSION 2.0](http://www.apache.org/licenses/LICENSE-2.0 )

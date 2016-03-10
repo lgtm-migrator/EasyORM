@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 
 import org.suntao.easyorm.configuration.DatabaseConfig;
 import org.suntao.easyorm.exceptions.ConnectionPoolException;
-import org.suntao.easyorm.exceptions.GetConnectionException;
 
 /**
  * 连接池
@@ -21,6 +20,9 @@ import org.suntao.easyorm.exceptions.GetConnectionException;
  *
  */
 public class ConnectionPool {
+	/**
+	 * 如果没有指定,池的默认大小
+	 */
 	public static final int DEFAULT_POOL_SIZE = 10;
 
 	private static Logger logger = Logger.getLogger(ConnectionPool.class
@@ -33,11 +35,22 @@ public class ConnectionPool {
 	private String url;
 	private String username;
 
+	/**
+	 * 创建一个大小为10的池
+	 * 
+	 * @param config
+	 */
 	public ConnectionPool(DatabaseConfig config) {
 		this(config.getDriver(), config.getJdbcurl(), config.getUsername(),
 				config.getPassword());
 	}
 
+	/**
+	 * 创建一个指定大小的池
+	 * 
+	 * @param config
+	 * @param poolSize
+	 */
 	public ConnectionPool(DatabaseConfig config, int poolSize) {
 		this(config.getDriver(), config.getJdbcurl(), config.getUsername(),
 				config.getPassword(), poolSize);
@@ -123,12 +136,13 @@ public class ConnectionPool {
 				logger.warning("请注意此连接池已经用尽,现在创建了一个新的连接以响应请求");
 				try {
 					result = getNewConnectionFromJDBC();
-				} catch (GetConnectionException e) {
+				} catch (SQLException e) {
 					e.printStackTrace();
 				}
 			}
 		} else {
-			throw new ConnectionPoolException("因为连接池还没有初始化,所以返回连接失败");
+			throw new ConnectionPoolException("因为连接池还没有初始化"
+					+ "(通常是因为连接池已经被关闭了)," + "所以返回连接失败");
 		}
 		return result;
 	}
@@ -146,16 +160,10 @@ public class ConnectionPool {
 	 * @throws GetConnectionException
 	 */
 	private synchronized Connection getNewConnectionFromJDBC()
-			throws GetConnectionException {
+			throws SQLException {
 		Connection result = null;
-		try {
-			result = DriverManager.getConnection(url, username, passwd);
-			logger.info("创建一个新连接" + result);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		if (result == null)
-			throw new GetConnectionException();
+		result = DriverManager.getConnection(url, username, passwd);
+		logger.info("创建一个新连接" + result);
 		return result;
 	}
 
@@ -175,7 +183,7 @@ public class ConnectionPool {
 				}
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
-			} catch (GetConnectionException e) {
+			} catch (SQLException e) {
 				logger.severe("初始化连接池时无法获取有效连接");
 				e.printStackTrace();
 			}
@@ -215,7 +223,15 @@ public class ConnectionPool {
 			}
 		}
 		connectionsMap.clear();
+		isInit = false;
 		logger.info("释放完成");
+	}
+
+	/**
+	 * 释放连接池
+	 */
+	public void closeAll() {
+		releasePool();
 	}
 
 	/**
@@ -237,7 +253,8 @@ public class ConnectionPool {
 	public synchronized Boolean returnConnection(Connection conn)
 			throws ConnectionPoolException {
 		Boolean result = false;
-		if (isInit()) { // 当参数为null
+		if (isInit()) {
+			// 当参数为null
 			if (conn == null) {
 				logger.info("请不要向池中返回一个null");
 				result = false;
@@ -265,7 +282,7 @@ public class ConnectionPool {
 				}
 			}
 		} else {
-			throw new ConnectionPoolException("该连接池已经关闭,返回连接失败");
+			throw new ConnectionPoolException("该连接池已经关闭/未初始化,返回连接失败");
 		}
 		return result;
 	}
