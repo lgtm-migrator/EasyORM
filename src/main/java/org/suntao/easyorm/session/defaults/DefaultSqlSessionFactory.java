@@ -19,6 +19,10 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
 	private static Logger logger = Logger.getLogger(SqlSessionFactory.class
 			.getName());
 
+	/**
+	 * 通过配置实体创建Factory
+	 * @param easyormConfig 配置实体
+	 */
 	public DefaultSqlSessionFactory(EasyormConfig easyormConfig) {
 		logger.info("使用EasyORMConfig实体配置SqlSessionFactory");
 		this.easyormConfig = easyormConfig;

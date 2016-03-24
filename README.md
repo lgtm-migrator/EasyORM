@@ -1,35 +1,44 @@
 # EASYORM
-* 这是一个基于Java的持久化框架
-* 本框架主要目的用于教学,使读者了解Java高级特性
-* 大量中文注释提供,尽量提供准确的注释
-* 如果有相关的改进建议,或者发现了Bug,请联系我
+基于Java的持久化框架
+本框架主要目的用于展示Java的一些高级特性
+大量中文注释
+如果有相关的改进建议,或者发现了Bug,或者是愿意参与到这个项目,请联系我 mrls@live.cn
 
 ## 简明使用方式
 一个可用的基于EasyORM项目,需要JDBC Driver和EasyORM jar
 编写需要映射的实体,实体属性的名字需要和数据库记录的列名一致(不要求大小写)
-编写DAO接口,使用@SQL注解定义sql语句,SQL语句中的参数以?代替,**请注意,方法的参数顺序和sql语句中的?符号顺序需要一一对应**,返回类型可以为List,Boolean,Integer,或者是你自己定义的实体类.**请注意不要编写返回类型为void的方法**	
+编写DAO接口使用@SQL注解定义sql语句SQL语句中的参数以?代替,**请注意,方法的参数顺序和sql语句中的?符号顺序需要一一对应**,返回类型可以为List,Boolean,Integer,或者是你自己定义的实体类.**请注意不要编写返回类型为void的方法**	
 编写程序,创建SqlSessionFactory
 使用factory.openSession创建SqlSession,使用SqlSession进行数据操作
-<BLOCKQUOTE>//源码示例
-SqlSessionFactory factory = new DefaultSqlSessionFactory(
-				driver, url, username, password); //创建factory
-SqlSession sqlSession=factory.openSession(); //创建SqlSession
-daoInterface mapper=sqlSession.getMapper(daointerface.class); //获取代理对象
-MethodReturnType result=mapper.sqlname(param); //完成一次查询
+<BLOCKQUOTE>//伪代码
+//创建factory
+SqlSessionFactory factory = new DefaultSqlSessionFactory(...); 
+//创建SqlSession
+SqlSession sqlSession=factory.openSession(); 
+ //获取接口代理对象
+daoInterface mapper=sqlSession.getMapper(daointerface.class);
+//完成一次查询
+MethodReturnType result=mapper.sqlname(param); 
 </BLOCKQUOTE>
-也可以直接调用SqlSession的默认方法,但注意传入的实体一定要使用DatabaseModel注解
-
+也可以调用SqlSession的默认方法
+**传入的实体类一定要使用DatabaseModel注解**
+<BLOCKQUOTE>sqlSession.insert(aModel);
+sqlSession.selectALL(aModelClass);
+sqlSession.selectByPrimaryKey(aModel);
+sqlSession.deleteByPrimaryKey(aModel);
+sqlSession.updateByPrimaryKey(aModel);</BLOCKQUOTE>
+## Simple
+[EasyORM-Simple](https://github.com/Soontao/EasyORM-Simple)
 ## 思路简记
-* 如果不使用连接池,SqlSession中并不建立连接,只有调用getConnection()时才建立连接,如果使用连接池,getConnection从连接池中取连接
+* 如果不使用连接池,SqlSession将执行语句的时候,临时创建一个连接
 * ProxyHandler调用Executor 
 * 将mapstatement传入executor,然后executor通过preparedstatment执行sql语句,获取ResultSet
-* DefaultExecutor中调用ResultMapping的方法,完成从行到实体的映射
-* 在创建SqlSession时,扫描xml,注解,以及接口方法的返回类型,存储为相应配置实体.
-* 在openSession()后,扫描一次接口和xml配置文件
+* Executor中调用ResultMapping的方法,完成从行到实体的映射
+* 构造SqlSession时,如果配置了DAO包的位置,会扫描DAO中的注解,以及接口方法的返回类型,存储为相应配置实体.
 * 当调用DAO接口中的方法,而SqlSession中找不到对应的MapStatement时,会调用Scanner扫描并缓存
 * 当需要获取一个实体的所有域的时候,会先从SqlSession中的modelFieldsCache中查找,如果没有,会扫描并缓存
 * 当需要获取一个代理的时候,会先在MapperProxyBuilder中的proxyCache中查找,如果没有,会先创建并缓存
-* 无论是调用默认方法,还是调用DAO,最终都是交由DefaultExecutor来执行
+* 无论是调用默认方法,还是调用DAO,最终都是交由Executor来执行
 
 ## TO DO
 * ~~XML解析的时候,出错需要提示某一些字符需要转义~~
@@ -136,7 +145,7 @@ MethodReturnType result=mapper.sqlname(param); //完成一次查询
 * 2016年2月13日 整合DAO接口扫描
 * 2016年2月14日 添加Apache2 开源协议/缓存代理对象/优化了Executor的执行流程
 * 2016年2月15日 优化Executor执行流程/添加mapper dtd
-* 2016年2月18日 添加连接池并持续测试可靠性(预计需要一周时间)
+* 2016年2月18日 添加连接池并持续测试可靠性
 * 2016年2月21-24日 为SqlSession添加几个默认方法
 * 2016年2月25日 各种更名,提高可读性
 * 2016年3月8日 整合连接池,移除XML配置

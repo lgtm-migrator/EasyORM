@@ -11,9 +11,9 @@ package org.suntao.easyorm.configuration;
 public class EasyormConfig {
 	public static int DEFAULT_POOL_SIZE = 10;
 	/**
-	 * DAO接口文件包位置
+	 * DAO接口所在包名
 	 */
-	private String daoPath;
+	private String daoPackage;
 	/**
 	 * 数据库配置
 	 */
@@ -29,48 +29,75 @@ public class EasyormConfig {
 	 */
 	private int poolSize;
 
+	/**
+	 * Easyorm配置实体
+	 */
 	public EasyormConfig() {
 		this.databaseConfig = new DatabaseConfig();
-		this.daoPath = null;
+		this.daoPackage = null;
 		this.isPooled = false;
 		this.poolSize = DEFAULT_POOL_SIZE;
 	}
 
+	/**
+	 * EasyORM配置实体
+	 * 
+	 * @param databaseConfig
+	 *            数据库配置
+	 * @param isPooled
+	 *            是否池化
+	 */
 	public EasyormConfig(DatabaseConfig databaseConfig, boolean isPooled) {
-		this();
-		this.databaseConfig = databaseConfig;
-		this.isPooled = isPooled;
+		this(databaseConfig, isPooled, DEFAULT_POOL_SIZE, null);
 	}
 
+	/**
+	 * Easyorm配置实体
+	 * 
+	 * @param databaseConfig
+	 *            数据库配置
+	 * @param pooled
+	 *            是否池化
+	 * @param pooledsize
+	 *            池的大小
+	 */
 	public EasyormConfig(DatabaseConfig databaseConfig, boolean pooled,
 			int pooledsize) {
 		this(databaseConfig, pooled, pooledsize, null);
 	}
 
+	/**
+	 * EasyORM 配置实体
+	 * 
+	 * @param databaseConfig
+	 *            数据库配置
+	 * @param isPooled
+	 *            是否池化
+	 * @param poolSize
+	 *            数据连接池大小
+	 * @param daoPackage
+	 *            DAO接口的Package
+	 */
 	public EasyormConfig(DatabaseConfig databaseConfig, boolean isPooled,
-			int poolSize, String daoPath) {
+			int poolSize, String daoPackage) {
 		this();
 		this.databaseConfig = databaseConfig;
 		this.isPooled = isPooled;
 		this.poolSize = poolSize;
-		this.daoPath = daoPath;
+		this.daoPackage = daoPackage;
 	}
 
-	public EasyormConfig(String daoPath, DatabaseConfig databaseConfig) {
-		this();
-		this.daoPath = daoPath;
+	public EasyormConfig(DatabaseConfig databaseConfig, String daoPath) {
+		super();
 		this.databaseConfig = databaseConfig;
+		this.daoPackage = daoPath;
 	}
 
 	public String getDaoPath() {
-		return daoPath;
+		return daoPackage;
 	}
 
 	public DatabaseConfig getDatabaseConfig() {
-		return databaseConfig;
-	}
-
-	public DatabaseConfig getDbConfig() {
 		return databaseConfig;
 	}
 
@@ -83,7 +110,7 @@ public class EasyormConfig {
 	}
 
 	public void setDaoPath(String daoPath) {
-		this.daoPath = daoPath;
+		this.daoPackage = daoPath;
 	}
 
 	public void setDatabaseConfig(DatabaseConfig dbConfig) {
@@ -94,6 +121,10 @@ public class EasyormConfig {
 		this.databaseConfig = dbConfig;
 	}
 
+	public void setPooled(boolean isPooled) {
+		this.isPooled = isPooled;
+	}
+
 	public void setPoolSize(int poolSize) {
 		this.poolSize = poolSize;
 	}
@@ -102,13 +133,9 @@ public class EasyormConfig {
 	public String toString() {
 		String result = null;
 		result = String.format(
-				"DaoPath:%s DBConfig:%s mapperConfigs:%s XmlsPath:%s", daoPath,
-				databaseConfig);
+				"DaoPath:%s DBConfig:%s mapperConfigs:%s XmlsPath:%s",
+				daoPackage, databaseConfig);
 		return result;
-	}
-
-	public void setPooled(boolean isPooled) {
-		this.isPooled = isPooled;
 	}
 
 }
