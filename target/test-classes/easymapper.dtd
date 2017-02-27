@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!ELEMENT mapper (method)+>
-<!ELEMENT method (sql)>
-<!ELEMENT sql (#PCDATA)>
-<!ATTLIST mapper id ID #REQUIRED>
-<!ATTLIST mapper daoclass CDATA #REQUIRED>
-<!ATTLIST method name CDATA #REQUIRED>

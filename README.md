@@ -1,16 +1,27 @@
 # EASYORM
+
 基于Java的持久化框架
+
 本框架主要目的用于展示Java的一些高级特性
+
 大量中文注释
+
 如果有相关的改进建议,或者发现了Bug,或者是愿意参与到这个项目,请联系我 mrls@live.cn
 
 ## 简明使用方式
+
 一个可用的基于EasyORM项目,需要JDBC Driver和EasyORM jar
+
 编写需要映射的实体,实体属性的名字需要和数据库记录的列名一致(不要求大小写)
-编写DAO接口使用@SQL注解定义sql语句SQL语句中的参数以?代替,**请注意,方法的参数顺序和sql语句中的?符号顺序需要一一对应**,返回类型可以为List,Boolean,Integer,或者是你自己定义的实体类.**请注意不要编写返回类型为void的方法**	
+
+编写DAO接口使用@SQL注解定义sql语句SQL语句中的参数以?代替,**请注意,方法的参数顺序和sql语句中的?符号顺序需要一一对应**,返回类型可以为List,
+Boolean,Integer,或者是你自己定义的实体类.**请注意不要编写返回类型为void的方法**	
+
 编写程序,创建SqlSessionFactory
+
 使用factory.openSession创建SqlSession,使用SqlSession进行数据操作
-<BLOCKQUOTE>//伪代码
+
+```java
 //创建factory
 SqlSessionFactory factory = new DefaultSqlSessionFactory(...); 
 //创建SqlSession
@@ -19,17 +30,25 @@ SqlSession sqlSession=factory.openSession();
 daoInterface mapper=sqlSession.getMapper(daointerface.class);
 //完成一次查询
 MethodReturnType result=mapper.sqlname(param); 
-</BLOCKQUOTE>
+```
+
 也可以调用SqlSession的默认方法
 **传入的实体类一定要使用DatabaseModel注解**
-<BLOCKQUOTE>sqlSession.insert(aModel);
+
+```java
+sqlSession.insert(aModel);
 sqlSession.selectALL(aModelClass);
 sqlSession.selectByPrimaryKey(aModel);
 sqlSession.deleteByPrimaryKey(aModel);
-sqlSession.updateByPrimaryKey(aModel);</BLOCKQUOTE>
+sqlSession.updateByPrimaryKey(aModel);
+```
+
 ## Simple
+
 [EasyORM-Simple](https://github.com/Soontao/EasyORM-Simple)
+
 ## 思路简记
+
 * 如果不使用连接池,SqlSession将执行语句的时候,临时创建一个连接
 * ProxyHandler调用Executor 
 * 将mapstatement传入executor,然后executor通过preparedstatment执行sql语句,获取ResultSet
@@ -41,6 +60,7 @@ sqlSession.updateByPrimaryKey(aModel);</BLOCKQUOTE>
 * 无论是调用默认方法,还是调用DAO,最终都是交由Executor来执行
 
 ## TO DO
+
 * ~~XML解析的时候,出错需要提示某一些字符需要转义~~
 
 	`需要确认是否使用XML Schema代替DTD验证`
@@ -129,7 +149,8 @@ sqlSession.updateByPrimaryKey(aModel);</BLOCKQUOTE>
 * 进行结果映射的时候,如若发现有用户自定义的类,需要进行扫描(缓存),并递归进行填充
 
 ## 知识储备
-* ~~log4j~~ 已从项目移除
+
+* ~~log4j~~ [已从项目移除]
 * Exception
 * 注解
 * 泛型
@@ -137,9 +158,10 @@ sqlSession.updateByPrimaryKey(aModel);</BLOCKQUOTE>
 * Class,类加载器
 * 反射,Reflection
 * 动态代理,Proxy
-* ~~XML解析,DTD,XML Schema~~ 已从项目移除
+* ~~XML解析,DTD,XML Schema~~ [已从项目移除]
 
 ## 更新日志
+
 * 2016年2月11日 第一次整合测试完成
 * 2016年2月12日 整合log4j
 * 2016年2月13日 整合DAO接口扫描
@@ -153,7 +175,9 @@ sqlSession.updateByPrimaryKey(aModel);</BLOCKQUOTE>
 * 2016年3月10日 添加对Field[]的缓存
 
 ## LICENSE
+
 [UNDER THE APACHE LICENSE VERSION 2.0](http://www.apache.org/licenses/LICENSE-2.0 )
 
-***
+---
+
 **SunTao UESTC mrls@live.cn**
